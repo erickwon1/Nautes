@@ -1,0 +1,18 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class Admin {
+	int admin_id;
+	String is_use;
+	String admin_name;
+	String login_id;
+	String login_pwd;
+	String admin_phone;
+	String certiy_code;
+	String certiy_datetime;
+	String e_mail;
+	String creat_user;
+	String creat_datetime;
+}

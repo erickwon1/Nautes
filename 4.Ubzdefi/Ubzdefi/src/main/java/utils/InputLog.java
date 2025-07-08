@@ -1,0 +1,50 @@
+package utils;
+
+import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Component
+public class InputLog {
+
+	private final File logFile;
+
+	public InputLog() {
+		String filePath = "./log/login_log.txt";
+		this.logFile = new File(filePath);
+
+		try {
+			File parentDir = logFile.getParentFile();
+			if (!parentDir.exists()) {
+				boolean createdDirs = parentDir.mkdirs();
+				System.out.println("log 폴더 생성 여부: " + createdDirs);
+			}
+
+			if (!logFile.exists()) {
+				boolean createdFile = logFile.createNewFile();
+				System.out.println("로그 파일 생성 여부: " + createdFile);
+			}
+
+			System.out.println("로그 파일 위치: " + logFile.getAbsolutePath());
+
+		} catch (IOException e) {
+			System.err.println("로그 파일 생성 중 오류 발생:");
+			e.printStackTrace();
+		}
+	}
+
+	public void inputLog(String message) {
+		try (FileWriter writer = new FileWriter(logFile, true)) {
+			String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			writer.write("[" + timeStamp + "] " + message + System.lineSeparator());
+			writer.flush();
+		} catch (IOException e) {
+			System.err.println("로그 쓰기 실패:");
+			e.printStackTrace();
+		}
+	}
+}

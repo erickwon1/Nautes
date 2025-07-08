@@ -1,0 +1,74 @@
+package com.nautestech.www.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.nautestech.www.model.CustomUserDetail;
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class OTPController {
+
+	private final GoogleOTPService googleOTPService;
+	private final AdminService adminService;
+
+	@GetMapping("/otp/setupPage")
+	public String otpSetupPage(@RequestParam String login_id, Model model) {
+		String secret = googleOTPService.createSecretKey();
+		String issuer = "UBZ DEFI";
+
+		adminService.saveOtpSecret(login_id, secret);
+
+		String qrText = googleOTPService.buildQrText(secret, login_id, issuer);
+
+		model.addAttribute("qrText", qrText);
+		model.addAttribute("secret", secret);
+		model.addAttribute("login_id", login_id);
+
+		return "otp/otp-setup";
+	}
+
+	@PostMapping("/verifyOTP")
+	public String verifyOTP(HttpServletRequest request, @RequestParam String login_id, @RequestParam String code,
+			Model model) {
+		HttpSession session = request.getSession(false);
+		String savedSecret = adminService.findById(login_id).getAuth_secret();
+
+		CustomUserDetail user = (CustomUserDetail) session.getAttribute("pre_auth_user");
+		if (session.getAttribute("memo").equals("로그인 인증")) {
+			if (user == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.header("Content-Type", "text/plain; charset=UTF-8").body("유효하지 않은 요청입니다.");
+			} else {
+				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getUsername(),
+						null, user.getAuthorities());
+				SecurityContextHolder.getContext().setAuthentication(auth);
+
+				session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+				session.removeAttribute("pre_auth_user");
+			}
+		}
+
+		if (googleOTPService.verifyCode(savedSecret, Integer.parseInt(code))) {
+			model.addAttribute("message", "OTP 인증이 완료되었습니다.");
+			return "otp/otp-success";
+		} else {
+			model.addAttribute("message", "인증번호가 올바르지 않습니다. 다시 시도하세요.");
+			return "otp/otp-setup";
+		}
+	}
+}

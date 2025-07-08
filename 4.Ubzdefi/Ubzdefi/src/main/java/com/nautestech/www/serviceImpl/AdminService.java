@@ -1,0 +1,26 @@
+package com.nautestech.www.serviceImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.AdminMapper;
+import com.nautestech.www.model.Admin;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class AdminService {
+	private final AdminMapper adminMapper;
+
+	public Admin findById(String login_id) {
+		return adminMapper.findById(login_id);
+	}
+
+	public void updatePassword(String login_id, String encodedPassword) {
+		adminMapper.updatePassword(login_id, encodedPassword);
+	}
+
+	public void saveOtpSecret(String login_id, String secret) {
+		adminMapper.saveOtpSecret(login_id, secret);
+	}
+}

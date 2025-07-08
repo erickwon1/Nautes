@@ -1,0 +1,18 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class LoginLog {
+	int log_id;
+	int admin_id;
+	String login_id;
+	String login_result;
+	String login_reason;
+	String login_ip;
+	String user_agent;
+	String login_datetime;
+	String auth_type;
+	String auth_result;
+	String created_at;
+}

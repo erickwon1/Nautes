@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Ubzdefi</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+
+	<script>
+		$(document).ready(function () {
+			$('#login_id').on('keypress', function (key) {
+				if (key.keyCode === 13) changepassword();
+			});
+
+			$('#otpModal').on('shown.bs.modal', function () {
+				$('#otpCode').focus();
+				$('#otpCode').on('keypress', function (key) {
+					if (key.keyCode === 13) verifyOTP();
+				});
+			});
+
+			$('#new_pwd, #confirm_pwd').on('keypress', function (key) {
+				if (key.keyCode === 13) confirm();
+			});
+		});
+
+		function changepassword() {
+
+			const loginId = $("#login_id").val();
+
+			$.ajax({
+				type: "POST",
+				url: "/changepassword",
+				data: {
+					login_id: loginId
+				},
+				success: function () {
+					$("#otpModal").modal("show");
+					$("#otpCode").val("").focus();
+					$("#otpResult").text("").removeClass("text-danger text-success");
+				},
+				error: function (xhr) {
+					alert("인증 요청 실패: " + xhr.responseText);
+				}
+			});
+		}
+
+		function verifyOTP() {
+			const code = $("#otpCode").val();
+			const loginId = $("#login_id").val();
+
+			$.post("/verifyOTP", {login_id: loginId, code: code})
+				.done(() => {
+					clearInterval(timer);
+					$("#verify-form").hide();
+					$("#otpModal").modal("hide");
+					$("#reset-password-form").show();
+					$('#new_pwd').focus();
+				})
+				.fail(() => {
+					$("#otpResult").text("OTP 인증번호가 틀렸거나 만료되었습니다.").addClass("text-danger");
+				});
+		}
+
+
+		function confirm() {
+			const newPwd = $('#new_pwd').val();
+			const confirmPwd = $('#confirm_pwd').val();
+
+			if (newPwd !== confirmPwd) {
+				alert('비밀번호가 일치하지 않습니다.');
+				return;
+			}
+
+			$.ajax({
+				type: "POST",
+				url: "/resetPassword",
+				data: {
+					login_id: $("#login_id").val(),
+					new_password: newPwd
+				},
+				success: function () {
+					alert('비밀번호가 성공적으로 변경되었습니다.');
+					location.href = '/';
+				},
+				error: function (xhr) {
+					alert("비밀번호 변경 실패: " + xhr.responseText);
+				}
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const otpInput = document.getElementById("otpCode");
+
+			otpInput.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 6);
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<div class="container-xxl login_con">
+		<div class="d-flex container-p-y align-items-center justify-content-center">
+			<div class="authentication-inner">
+				<div class="card">
+					<div class="card-body">
+						<div class="app-brand justify-content-center logo_wrap text-center my-4">
+							<h1 class="text-primary"><strong>Ubzdefi</strong></h1>
+							<h2 class="my-2">비밀번호 변경</h2>
+						</div>
+						<form id="verify-form" class="mb-3">
+							<div class="mb-3">
+								<label for="login_id" class="form-label">ID</label>
+								<input type="text" class="form-control" id="login_id" name="login_id"
+									placeholder="로그인 ID를 입력해 주세요." autofocus />
+							</div>
+							<div class="mb-3 mt-4">
+								<button type="button" class="btn btn-primary d-grid w-100"
+									onclick="idcheck()">본인인증</button>
+							</div>
+						</form>
+						<form id="reset-password-form" class="mb-3" style="display: none;">
+							<div class="mb-3">
+								<label for="new_pwd" class="form-label">새 비밀번호</label>
+								<small class="form-text ms-1" style="font-size: 0.85rem; color: #dc3545 !important;">
+									※ 특수문자, 영문 대문자, 숫자를 포함한 9자리 이상
+								</small>
+								<input type="password" class="form-control" id="new_pwd" name="new_pwd"
+									placeholder="새 비밀번호를 입력해 주세요." />
+							</div>
+							<div class="mb-3">
+								<label for="confirm_pwd" class="form-label">비밀번호 확인</label>
+								<input type="password" class="form-control" id="confirm_pwd" name="confirm_pwd"
+									placeholder="비밀번호를 다시 입력해 주세요." />
+							</div>
+							<div class="mb-3 mt-4">
+								<button type="button" class="btn btn-primary d-grid w-100" onclick="confirm()">비밀번호
+									변경</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="otpModal" class="modal fade" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content p-4 text-center">
+					<h4 class="mb-3">OTP 인증</h4>
+					<p>Google OTP 앱에 생성된 코드를 입력하세요.</p>
+					<input type="text" id="otpCode" class="form-control mb-2" placeholder="6자리 코드 입력" maxlength="6">
+					<div id="otpResult" class="mb-2"></div>
+					<button class="btn btn-primary" onclick="verifyOTP()">확인</button>
+				</div>
+			</div>
+		</div>
+		<footer class="footer border-top">
+			<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+				<div class="col-12 col-sm-auto text-start">
+					<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+				</div>
+				<div class="col-12 col-sm-auto text-end">
+					<p class="mb-0 text-600">COPYRIGHT © 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+
+</html>

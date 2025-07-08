@@ -1,0 +1,14 @@
+package utils;
+
+import java.io.File;
+
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class InputLog {
+	private final File file;
+
+	public void inputLog() {
+		String message;
+	}
+}

@@ -1,0 +1,35 @@
+package utils;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class InputLog {
+	private final File logFile;
+
+	public InputLog(String filePath) {
+		this.logFile = new File(filePath);
+		try {
+			if (!logFile.exists()) {
+				logFile.createNewFile();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void inputLog(String message) {
+		try (FileWriter writer = new FileWriter(logFile, true)) {
+			// 날짜와 시간 포맷 추가
+			String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			writer.write("[" + timeStamp + "] " + message + System.lineSeparator());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

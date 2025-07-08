@@ -1,0 +1,12 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.SMS;
+
+@Mapper
+public interface SMSMapper {
+	public void sendSMS(SMS sms);
+
+	public SMS findLatestCode(String phone);
+}

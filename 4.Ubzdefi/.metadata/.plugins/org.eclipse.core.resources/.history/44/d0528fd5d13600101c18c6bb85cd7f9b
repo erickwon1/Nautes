@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.RouteMapper">
+	<resultMap type="transaction" id="transactionMap" >
+		<result property="amount" column="amount"/>
+		<result property="created_at" column="created_at"/>
+		<result property="from_address" column="from_address"/>
+		<result property="to_address" column="to_address"/>
+		<result property="token_address" column="token_address"/>
+		<result property="tx_hash" column="tx_hash"/>
+		<result property="money" column="money"/>
+		<result property="period" column="period"/>
+		<result property="coinname" column="coinname"/>
+		<result property="token_ticker" column="token_ticker"/>
+		<result property="mainnet" column="mainnet"/>
+		<result property="complete" column="complete"/>
+		<result property="productid" column="productid"/>
+	</resultMap>
+    <select id="getTransactionRecord" parameterType="com.nautestech.www.model.Transaction" resultMap="transactionMap">
+        SELECT * FROM transaction_record
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.r_type != null and data.r_type != '-1'">
+            	 AND r_type LIKE CONCAT('%', #{data.r_type}, '%')
+        	</if>
+         	<if test="data.r_method != null and data.r_method != ''">
+            	 AND r_method LIKE CONCAT('%', #{data.r_method}, '%')
+        	</if>
+        	 <if test="data.r_src != null and data.r_src != ''">
+            	AND r_src LIKE CONCAT('%', #{data.r_src}, '%')
+        	</if>
+        	<if test="data.r_rprnum != null and data.r_rprnum != ''">
+            	AND r_rprnum LIKE CONCAT('%', #{data.r_rprnum}, '%')
+        	</if>
+        	<if test="data.r_proxy_domain != null and data.r_proxy_domain != ''">
+            	AND r_proxy_domain LIKE CONCAT('%', #{data.r_proxy_domain}, '%')
+        	</if>
+        	<if test="data.r_proxy_addr != null and data.r_proxy_addr != ''">
+            	AND r_proxy_addr LIKE CONCAT('%', #{data.r_proxy_addr}, '%')
+        	</if>
+        	<if test="data.r_udpport != null and data.r_udpport != ''">
+            	AND r_udpport = #{data.r_udpport}
+        	</if>
+        </trim>
+        ORDER BY r_src ASC
+        LIMIT #{pageable.offset}, #{pageable.pageSize};
+    </select>
+    <select id="getRoutesCount" parameterType="com.nautestech.www.model.CurrentSessionInfo" resultType="int">
+        SELECT COUNT(*) FROM ROUTE2
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.r_type != null and data.r_type != '-1'">
+            	 AND r_type LIKE CONCAT('%', #{data.r_type}, '%')
+        	</if>
+         	<if test="data.r_method != null and data.r_method != ''">
+            	 AND r_method LIKE CONCAT('%', #{data.r_method}, '%')
+        	</if>
+        	 <if test="data.r_src != null and data.r_src != ''">
+            	AND r_src LIKE CONCAT('%', #{data.r_src}, '%')
+        	</if>
+        	<if test="data.r_rprnum != null and data.r_rprnum != ''">
+            	AND r_rprnum LIKE CONCAT('%', #{data.r_rprnum}, '%')
+        	</if>
+        	<if test="data.r_proxy_domain != null and data.r_proxy_domain != ''">
+            	AND r_proxy_domain LIKE CONCAT('%', #{data.r_proxy_domain}, '%')
+        	</if>
+        	<if test="data.r_proxy_addr != null and data.r_proxy_addr != ''">
+            	AND r_proxy_addr LIKE CONCAT('%', #{data.r_proxy_addr}, '%')
+        	</if>
+        	<if test="data.r_udpport != null and data.r_udpport != ''">
+            	AND r_udpport = #{data.r_udpport}
+        	</if>
+        </trim>
+    </select>
+    <select id="findBySrc" parameterType="String" resultMap="routeMap">
+        SELECT * FROM ROUTE2 WHERE r_src = #{r_src};
+    </select>
+	<update id="updateRoutes">
+         UPDATE modified_table set ROUTE2='1';
+    </update>
+</mapper>

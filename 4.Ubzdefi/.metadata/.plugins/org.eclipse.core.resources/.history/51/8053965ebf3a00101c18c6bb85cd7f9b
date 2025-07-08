@@ -1,0 +1,10 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.Admin;
+
+@Mapper
+public interface AdminMapper {
+	public Admin findById(String login_id);
+}

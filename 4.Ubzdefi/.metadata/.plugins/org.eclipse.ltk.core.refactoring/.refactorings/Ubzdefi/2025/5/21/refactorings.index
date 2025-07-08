@@ -1,0 +1,25 @@
+1747815748958	Rename resource 'application.properties'
+1747816048262	Rename package 'com.nautestech.www.service'
+1747879222442	Rename resource 'sessions_info.html'
+1747879256148	Rename type 'CellController'
+1747879274803	Rename resource 'ubz_info.html'
+1747879376463	Rename type 'CellServiceImpl'
+1747879758582	Rename resource 'ubzMem_info.html'
+1747879771643	Delete element
+1747879850287	Rename resource 'routingTable_add.html'
+1747879901879	Rename type 'UbzMemServiceImpl'
+1747879918343	Rename type 'UbzMemMapper'
+1747879970066	Rename type 'UbzMemController'
+1747880091803	Rename resource 'management'
+1747880097655	Rename resource 'admin_menu.html'
+1747881985320	Delete element
+1747881987732	Delete element
+1747881990160	Delete element
+1747882005954	Rename resource 'RouteMapper.xml'
+1747892625469	Rename type 'AdminMenuServiceImpl'
+1747894222189	Rename resource 'menu.html'
+1747894598902	Rename type 'AdminMenuService'
+1747894987139	Rename type 'AdminMenuController'
+1747895602305	Rename resource 'CoinMapper.html'
+1747895632723	Rename resource 'AdminMenuMapper.xml'
+1747967204270	Rename package 'config'

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="callSettersOnNulls" value="true"/>
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<setting name="useGeneratedKeys" value="false"/>
+		<setting name="defaultStatementTimeout" value="180"/>
+	</settings>
+  
+	<typeAliases>
+		<typeAlias alias="transaction" type="com.nautestech.www.model.TransactionRecord"/>
+		<typeAlias alias="coin" type="com.nautestech.www.model.CoinProduct"/>
+		<typeAlias alias="admin" type="com.nautestech.www.model.Admin"/>
+		<typeAlias alias="sms" type="com.nautestech.www.model.SMS"/>
+	</typeAliases>
+
+</configuration>

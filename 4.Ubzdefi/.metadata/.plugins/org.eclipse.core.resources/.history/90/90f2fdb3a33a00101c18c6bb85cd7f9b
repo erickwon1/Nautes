@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Ubzdefi</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+</head>
+<script>
+	$(document).ready(function () {
+		$('#login_id, #admin_phone').on('keypress', function (key) {
+			if (key.keyCode === 13) changepassword();
+		});
+		$('#authModal').on('shown.bs.modal', function () {
+			$('#auth_code').focus();
+			$('#auth_code').on('keypress', function (key) {
+				if (key.keyCode === 13) verifyCode();
+			});
+		});
+	});
+
+	function changepassword() {
+		$.ajax({
+			type: "POST",
+			url: "/changepassword",
+			data: {
+				login_id: $("#login_id").val(),
+				admin_phone: $("#admin_phone").val()
+			},
+			success: function () {
+				startAuthModal();
+			},
+			error: function (xhr) {
+				alert("인증 요청 실패: " + xhr.responseText);
+			}
+		});
+	}
+
+	function verifyCode() {
+		$.ajax({
+			type: "POST",
+			url: "/verifyCode",
+			data: {
+				code: $("#auth_code").val()
+			},
+			success: function () {
+				location.href = "/";
+			},
+			error: function (xhr) {
+				alert("인증 실패: " + xhr.responseText);
+			}
+		});
+	}
+
+	function startAuthModal() {
+		timeLeft = 180;
+		updateTimer();
+		$("#authModal").modal("show");
+		timer = setInterval(updateTimer, 1000);
+	}
+</script>
+
+<body>
+	<div class="container-xxl login_con">
+		<div class="d-flex container-p-y align-items-center justify-content-center">
+			<div class="authentication-inner">
+				<div class="card">
+					<div class="card-body">
+						<div class="app-brand justify-content-center logo_wrap text-center my-4">
+							<h1 class="text-primary"><strong>UBZ DEFI</strong></h1>
+							<h2 class="my-2">비밀번호 변경</h2>
+						</div>
+						<form id="formAuthentication" class="mb-3">
+							<div class=" mb-3">
+								<label for="login_id" class="form-label">ID</label>
+								<input type="text" class="form-control" id="login_id" name="login_id"
+									placeholder="로그인 ID를 입력해 주세요." />
+							</div>
+							<div class=" mb-3">
+								<label for="admin_phone" class="form-label">전화번호</label>
+								<input type="text" class="form-control" id="admin_phone" name="admin_phone"
+									placeholder="전화번호를 입력해 주세요." />
+							</div>
+							<div class=" mb-3 mt-4">
+								<button class="btn btn-primary d-grid w-100" type="button"
+									onclick="changepassword()">본인인증</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="authModal" class="modal fade" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content p-4 text-center">
+					<h4 class="mb-3">인증번호 입력</h4>
+					<input type="text" id="auth_code" class="form-control mb-3" placeholder="인증번호 입력">
+					<p id="timer" class="mb-3 text-danger fs-5">03:00</p>
+					<button class="btn btn-primary" onclick="verifyCode()">확인</button>
+				</div>
+			</div>
+		</div>
+		<footer class="footer border-top">
+			<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+				<div class="col-12 col-sm-auto text-start">
+					<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+				</div>
+				<div class="col-12 col-sm-auto text-end">
+					<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+
+</html>

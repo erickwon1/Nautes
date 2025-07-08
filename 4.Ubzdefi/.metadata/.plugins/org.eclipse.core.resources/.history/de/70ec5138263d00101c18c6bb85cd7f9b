@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.CoinMapper">
+	<resultMap type="coin" id="coinMap" >
+		<result property="id" column="id"/>
+		<result property="amount" column="amount"/>
+		<result property="token_ticker" column="token_ticker"/>
+		<result property="money" column="money"/>
+		<result property="mainnet" column="mainnet"/>
+		<result property="coin_adress" column="coin_adress"/>
+		<result property="coin_name" column="coin_name"/>
+		<result property="complete" column="complete"/>
+		<result property="tx_hash" column="tx_hash"/>
+		<result property="period" column="period"/>
+		<result property="created_at" column="created_at"/>
+		<result property="interest_coin_adress" column="interest_coin_adress"/>
+		<result property="user_address" column="user_address"/>
+	</resultMap>
+    <select id="getCoinProduct" parameterType="com.nautestech.www.model.CoinProduct" resultMap="coinMap">
+        SELECT * FROM t_coin_product
+        WHERE created_at BETWEEN #{start} AND #{end}
+        ORDER BY created_at DESC
+        LIMIT #{pageable.offset}, #{pageable.pageSize};
+    </select>
+    <select id="getCoinProductCount" parameterType="com.nautestech.www.model.CoinProduct" resultType="int">
+        SELECT COUNT(*) FROM t_coin_product
+        WHERE 1=1
+    </select>
+</mapper>

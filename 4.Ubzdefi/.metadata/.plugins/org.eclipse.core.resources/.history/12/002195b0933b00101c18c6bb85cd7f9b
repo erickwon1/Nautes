@@ -1,0 +1,18 @@
+package com.nautestech.www.serviceImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.LoginLogMapper;
+import com.nautestech.www.model.Admin;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class LoginLogService {
+	private final LoginLogMapper loginLogMapper;
+
+	public void insertLoginLog(Admin admin) {
+		loginLogMapper.insertLoginLog(admin);
+	}
+}

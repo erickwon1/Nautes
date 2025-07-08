@@ -1,0 +1,49 @@
+package com.nautestech.www.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class OTPController {
+
+	private final GoogleOTPService googleOTPService;
+	private final AdminService adminService;
+
+	@GetMapping("/otp/setupPage")
+	public String otpSetupPage(@RequestParam String login_id, Model model) {
+		String secret = googleOTPService.createSecretKey();
+		String issuer = "UBZ DEFI";
+
+		adminService.saveOtpSecret(login_id, secret);
+
+		String qrText = googleOTPService.buildQrText(secret, login_id, issuer);
+
+		model.addAttribute("qrText", qrText);
+		model.addAttribute("secret", secret);
+		model.addAttribute("login_id", login_id);
+
+		return "otp/otp-setup";
+	}
+
+	@PostMapping("/verifyOTP")
+	public String verifyOTP(@RequestParam String login_id, @RequestParam String code, Model model) {
+		String savedSecret = adminService.findById(login_id).getAuth_secret();
+
+		if (googleOTPService.verifyCode(savedSecret, Integer.parseInt(code))) {
+			model.addAttribute("message", "OTP 인증이 완료되었습니다.");
+			return "otp/otp-success";
+		} else {
+			model.addAttribute("message", "인증번호가 올바르지 않습니다. 다시 시도하세요.");
+			return "otp/otp-setup";
+		}
+	}
+}

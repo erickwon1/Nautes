@@ -1,0 +1,18 @@
+package com.nautestech.www.serviceImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.SMSMapper;
+import com.nautestech.www.model.SMS;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class smsService {
+	private final SMSMapper smsMapper;
+
+	public SMS sendSMS(SMS sms) {
+		return smsMapper.sendSMS(sms);
+	}
+}

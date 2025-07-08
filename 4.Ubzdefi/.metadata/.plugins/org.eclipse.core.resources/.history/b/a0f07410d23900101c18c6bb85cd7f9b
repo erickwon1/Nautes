@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.AdminMapper">
+	<resultMap type="member" id="memberMap" >
+		<result property="member_id" column="member_id"/>
+		<result property="member_name" column="member_name"/>
+		<result property="member_password" column="member_password"/>
+		<result property="member_etc" column="member_etc"/>
+		<result property="member_gubun" column="member_gubun"/>
+	</resultMap>
+    <select id="findById" parameterType="String" resultMap="memberMap">
+        SELECT * FROM t_admin WHERE login_id = #{login_id};
+    </select>
+</mapper>

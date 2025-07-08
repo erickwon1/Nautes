@@ -1,0 +1,16 @@
+package com.nautestech.www.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.TransactionRecord;
+
+import utils.RequestList;
+
+@Mapper
+public interface TransactionMapper {
+	public List<TransactionRecord> getTransactionRecord(RequestList<?> requestList);
+
+	public int getTransactionRecordCount(RequestList<?> requestList);
+}

@@ -1,0 +1,165 @@
+package com.nautestech.www.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.Admin;
+import com.nautestech.www.model.CustomUserDetail;
+import com.nautestech.www.model.LoginLog;
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.CustomUserDetailsService;
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+import com.nautestech.www.serviceImpl.LoginLogService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor
+public class LoginController {
+
+	private final CustomUserDetailsService userDetailsService;
+	private final AdminService adminService;
+	private final LoginLogService loginLogService;
+	private final GoogleOTPService googleOTPService;
+
+	@RequestMapping(value = "/", method = { RequestMethod.GET, RequestMethod.POST })
+	public String loginPage() {
+		return "login/login";
+	}
+
+	@PostMapping("/preLogin")
+	@ResponseBody
+	public ResponseEntity<?> preLogin(HttpServletRequest request, @RequestParam("login_id") String login_id,
+			@RequestParam("login_pwd") String login_pwd) {
+
+		CustomUserDetail user;
+		try {
+			user = (CustomUserDetail) userDetailsService.loadUserByUsername(login_id);
+		} catch (UsernameNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("아이디 또는 비밀번호가 잘못되었습니다.");
+		}
+
+		PasswordEncoder encoder = new BCryptPasswordEncoder();
+
+		if (!encoder.matches(login_pwd, user.getPassword())) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("아이디 또는 비밀번호가 잘못되었습니다.");
+		}
+
+		Admin admin = adminService.findById(login_id);
+
+		HttpSession session = request.getSession();
+		session.setAttribute("pre_auth_user", user);
+		session.setAttribute("verify_reason", "login");
+		session.setMaxInactiveInterval(180); // 3분
+
+		return ResponseEntity.ok("Google OTP 앱에 생성된 코드를 입력하세요.");
+	}
+
+	@GetMapping("/changepassword")
+	public String changePassword() {
+		return "login/changepassword";
+	}
+
+	@PostMapping("/changepassword")
+	public ResponseEntity<?> changePassword(HttpServletRequest request, @RequestParam("login_id") String login_id) {
+
+		Admin admin = adminService.findById(login_id);
+		if (admin == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("존재하지 않는 아이디입니다.");
+		}
+
+		HttpSession session = request.getSession();
+		session.setAttribute("verify_reason", "changepassword");
+		session.setMaxInactiveInterval(180); // 3분
+
+		return ResponseEntity.ok("Google OTP 앱에 생성된 코드를 입력하세요.");
+	}
+
+	@PostMapping("/resetPassword")
+	@ResponseBody
+	public ResponseEntity<?> resetPassword(@RequestParam("login_id") String login_id,
+			@RequestParam("new_password") String newPassword) {
+
+		PasswordEncoder encoder = new BCryptPasswordEncoder();
+		String encodedPassword = encoder.encode(newPassword);
+
+		adminService.updatePassword(login_id, encodedPassword);
+
+		return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+	}
+
+	@PostMapping("/verifyOTP")
+	@ResponseBody
+	public ResponseEntity<?> verifyOTP(HttpServletRequest request, @RequestParam String login_id,
+			@RequestParam String code) {
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("세션이 만료되었습니다.");
+		}
+		String savedSecret = adminService.findById(login_id).getAuth_secret();
+
+		if (googleOTPService.verifyCode(savedSecret, Integer.parseInt(code))) {
+			return ResponseEntity.ok("인증 성공");
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("인증번호가 틀렸거나 만료되었습니다.");
+		}
+	}
+
+	LoginLog loginLog = new LoginLog();
+
+	if(session.getAttribute("verify_reason ").equals("login"))
+	{
+		CustomUserDetail user = (CustomUserDetail) session.getAttribute("pre_auth_user");
+		if (user == null) {
+			loginLogService.insertLoginLog(loginLog);
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).header("Content-Type", "text/plain; charset=UTF-8")
+					.body("유효하지 않은 요청입니다.");
+		} else {
+			UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getUsername(), null,
+					user.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(auth);
+
+			session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+			Admin admin = adminService.findById(login_id);
+			loginLog.setAdmin_id(admin.getAdmin_id());
+			loginLog.setLogin_id(login_id);
+			loginLog.setLogin_result("성공");
+			loginLog.setLogin_reason("");
+			loginLog.setLogin_ip(admin.getLogin_ip());
+			loginLog.setUser_agent("");
+			loginLog.setAuth_type(admin.getAuth_type());
+			loginLog.setAuth_result("");
+			loginLogService.insertLoginLog(loginLog);
+
+			session.removeAttribute("pre_auth_user");
+		}
+
+		session.removeAttribute("verify_reason");
+
+	}
+
+	@RequestMapping(value = "/logout", method = { RequestMethod.GET, RequestMethod.POST })
+	public String logoutPage(HttpSession session) {
+		session.invalidate();
+		return "login/login";
+	}
+}

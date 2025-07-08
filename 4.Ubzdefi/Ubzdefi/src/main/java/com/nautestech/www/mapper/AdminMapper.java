@@ -1,0 +1,14 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.Admin;
+
+@Mapper
+public interface AdminMapper {
+	public Admin findById(String login_id);
+
+	public void updatePassword(String login_id, String encodedPassword);
+
+	public void saveOtpSecret(String login_id, String secret);
+}

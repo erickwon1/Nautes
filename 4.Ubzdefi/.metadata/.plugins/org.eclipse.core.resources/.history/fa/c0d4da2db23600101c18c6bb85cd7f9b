@@ -1,0 +1,34 @@
+package com.nautestech.www.serviceImpl;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class AdminMenuServiceImpl {
+	private final RouteMapper routeMapper;
+
+	public RouteService(RouteMapper routeMapper) {
+		this.routeMapper = routeMapper;
+	}
+
+	public void insertRoutes(Route insertRoute) {
+		routeMapper.insertRoutes(insertRoute);
+	}
+
+	@Override
+	public int setdelete(List<Integer> rList) {
+		return routeMapper.deleteRoutes(rList);
+	}
+
+	public Page<Route> getRoutes(Route route, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(route).pageable(pageable).build();
+
+		List<Route> content = routeMapper.getRoutes(requestList);
+		int total = routeMapper.getRoutesCount(requestList);
+
+		return new PageImpl<Route>(content, pageable, total);
+	}
+
+	public void setupdate() {
+		routeMapper.updateRoutes();
+	}
+}

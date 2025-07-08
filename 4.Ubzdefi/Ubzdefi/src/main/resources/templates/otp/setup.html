@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>OTP 등록</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			$('#otpCode').on('keypress', function (key) {
+				if (key.keyCode === 13) verifyOTP();
+			});
+		});
+
+		function verifyOTP() {
+			const code = $("#otpCode").val();
+			const loginId = $("#login_id").val();
+
+			$.post("/verifyOTP", {login_id: loginId, code: code})
+				.done(() => {
+					location.href = "/admin/coin";
+				})
+				.fail(() => {
+					$("#otpResult").text("OTP 인증번호가 틀렸거나 만료되었습니다.").removeClass("text-success").addClass("text-danger");
+				});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const otpInput = document.getElementById("otpCode");
+
+			otpInput.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 6);
+			});
+		});
+	</script>
+</head>
+
+<body class="container mt-5" style="max-width: 480px;">
+	<h3 class="text-center mb-4">OTP 등록</h3>
+
+	<div class="alert alert-info text-center">
+		Google Authenticator 앱으로 아래 QR 코드를 스캔하세요.
+	</div>
+
+	<div class="text-center">
+		<img th:src="@{/generateQRCode(text=${qrText})}" alt="QR 코드" class="border p-2 mb-3">
+		<p class="mb-4"><strong>시크릿 키:</strong> <span th:text="${secret}"></span></p>
+	</div>
+
+	<input type="hidden" id="login_id" th:value="${login_id}">
+
+	<div class="mb-3">
+		<label for="otpCode" class="form-label">앱에 표시된 6자리 인증번호</label>
+		<input type="text" id="otpCode" class="form-control" placeholder="6자리 숫자 입력" maxlength="6" autofocus>
+		<div id="otpResult" class="form-text text-danger mt-1"></div>
+	</div>
+
+	<div class="d-grid">
+		<button class="btn btn-primary" onclick="verifyOTP()">확인</button>
+	</div>
+</body>
+
+</html>

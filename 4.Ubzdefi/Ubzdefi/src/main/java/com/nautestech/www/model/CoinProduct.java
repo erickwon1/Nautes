@@ -1,0 +1,20 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class CoinProduct {
+	int id;
+	String amount;
+	String token_ticker;
+	String money;
+	String mainnet;
+	String coin_adress;
+	String coin_name;
+	String complete;
+	String tx_hash;
+	String period;
+	String created_at;
+	String interest_coin_adress;
+	String user_adress;
+}

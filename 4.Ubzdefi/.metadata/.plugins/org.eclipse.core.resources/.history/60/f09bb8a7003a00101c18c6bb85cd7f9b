@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: Ubzdefi
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://118.67.142.108:13306/ubzdefi?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+    username: ubz
+    password: Ubz123!@24
+    hikari:
+      max-lifetime: 30000
+      idle-timeout: 600000
+      keepalive-time: 150000
+      validation-timeout: 30000
+      connection-timeout: 30000
+      maximum-pool-size: 20
+  web:
+    resources:
+      static-locations: classpath:/static/
+  messages:
+    basename: classpath:messages/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    always-use-message-format: true
+  http:
+    encoding:
+			charset: UTF-8
+mybatis:
+ mapper-locations: classpath*:mybatis/mapper/*.xml
+ config-location: classpath:mybatis/mybatis-config.xml

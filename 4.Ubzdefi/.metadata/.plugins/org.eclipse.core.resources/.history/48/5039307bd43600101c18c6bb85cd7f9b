@@ -1,0 +1,35 @@
+package com.nautestech.www.serviceImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.TransactionMapper;
+import com.nautestech.www.model.TransactionRecord;
+
+import utils.RequestList;
+
+@Service
+public class TransactionRecordService {
+	private final TransactionMapper transactionMapper;
+
+	public TransactionRecordService(TransactionMapper transactionMapper) {
+		this.transactionMapper = transactionMapper;
+	}
+
+	public Page<TransactionRecord> getTransactionRecord(TransactionRecord transaction, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(transaction).pageable(pageable).build();
+
+		List<TransactionRecord> content = adminMenuMapper.getTransactionRecord(requestList);
+		int total = adminMenuMapper.getTransactionRecordCount(requestList);
+
+		return new PageImpl<TransactionRecord>(content, pageable, total);
+	}
+
+	public void setupdate() {
+		adminMenuMapper.updateTransactionrecord();
+	}
+}

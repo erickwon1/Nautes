@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Spring Boot 전용 설정 가능하게 해줌 -->
+    <springProperty name="LOG_FILE" source="logging.file.name" defaultValue="logs/spring.log"/>
+
+    <!-- 콘솔 출력: 색상 지원 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="org.springframework.boot.logging.logback.ColorConverter">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 로그인 실패 로그 파일 Appender -->
+    <appender name="LOGIN_FAIL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/login-fail.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/login-fail.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 로그인 실패 전용 로거 -->
+    <logger name="LoginFailLogger" level="WARN" additivity="false">
+        <appender-ref ref="LOGIN_FAIL_FILE" />
+    </logger>
+
+    <!-- 루트 로거: 콘솔 출력 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>

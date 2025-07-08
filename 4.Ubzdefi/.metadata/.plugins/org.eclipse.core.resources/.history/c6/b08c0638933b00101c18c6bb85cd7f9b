@@ -1,0 +1,10 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.LoginLog;
+
+@Mapper
+public interface LoginLogMapper {
+	public void insertLoginLog(LoginLog loginlog);
+}

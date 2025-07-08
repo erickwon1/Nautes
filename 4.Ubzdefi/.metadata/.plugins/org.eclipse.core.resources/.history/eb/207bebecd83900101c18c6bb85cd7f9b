@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Ubzdefi</title>
+
+	<link rel="stylesheet" type="text/css" href="/resource/assets/css/reset.css">
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+
+	<link th:href="@{/resource/assets/css/bootstrap.min.css}" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/login_style.css}">
+	<script>
+		$(document).ready(function () {
+			$('#login_id, #login_pwd').on('keypress', function (key) {
+				if (key.keyCode == 13) login();
+			});
+		});
+		function login() {
+			$.ajax({
+				type: "POST",
+				url: "/preLogin",
+				data: {
+					login_id: $("#login_id").val(),
+					password: $("#login_pwd").val()
+				},
+				success: function (msg) {
+					$("#authModal").modal("show");
+				},
+				error: function (xhr) {
+					alert("로그인 실패: " + xhr.responseText);
+				}
+			});
+		}
+
+		function verifyCode() {
+			$.ajax({
+				type: "POST",
+				url: "/verifyCode",
+				data: {
+					code: $("#auth_code").val()
+				},
+				success: function () {
+					location.href = "/admin/transaction";
+				},
+				error: function (xhr) {
+					alert("인증 실패: " + xhr.responseText);
+				}
+			});
+		}
+
+	</script>
+</head>
+
+<body>
+	<div class="container-xxl login_con">
+		<div class="d-flex container-p-y align-items-center justify-content-center">
+			<div class="authentication-inner">
+				<div class="card">
+					<div class="card-body">
+						<div class="app-brand justify-content-center logo_wrap text-center my-4">
+							<h1 class="text-primary"><strong>Ubzdefi</strong></h1>
+							<h2 class="my-2">로그인</h2>
+						</div>
+						<form id="formAuthentication" class="mb-3">
+
+
+							<div class="mb-3">
+								<label for="login_id" class="form-label">ID</label>
+								<input type="text" class="form-control" id="login_id" name="login_id"
+									placeholder="ID를 입력해 주세요." autofocus />
+							</div>
+							<div class="mb-3 form-password-toggle">
+								<label class="form-label" for="login_pwd">Password</label>
+								<input type="password" id="login_pwd" class="form-control" name="login_pwd"
+									placeholder="비밀번호를 입력해 주세요." aria-describedby="password" />
+							</div>
+							<div class="mb-3 mt-4">
+								<a class="btn btn-primary d-grid w-100" onclick="login_ars()" type="button">ARS 인증
+									요청</a>
+							</div>
+							<div class="mb-3 mt-5" id="countP" style="display: none;">
+								<label for="certification_num" class="form-label">인증 번호</label>
+								<p class="text-danger text-center float-end">입력시간 :
+									<span id="countSpan" class="text-danger">180초</span>
+								</p>
+								<input type="text" class="form-control" id="certification_num" name="certification_num"
+									placeholder="인증번호를 입력해 주세요." />
+							</div>
+							<div class="mb-3 mt-4">
+								<a class="btn btn-primary d-grid w-100" onclick="login()">로그인</a>
+							</div>
+
+						</form>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">인증번호 확인</h5>
+					</div>
+					<div class="modal-body">
+						<p>휴대폰으로 발송된 인증번호를 입력하세요.</p>
+						<input type="text" id="auth_code" class="form-control" placeholder="인증번호 입력">
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-primary" onclick="verifyAuthCode()">확인</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<footer class="footer border-top">
+			<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+				<div class="col-12 col-sm-auto text-start">
+					<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+				</div>
+				<div class="col-12 col-sm-auto text-end">
+					<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+				</div>
+			</div>
+		</footer>
+	</div>
+
+</body>
+
+</html>

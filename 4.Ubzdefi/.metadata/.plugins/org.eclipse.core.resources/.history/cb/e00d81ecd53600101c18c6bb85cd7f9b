@@ -1,0 +1,94 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.nautestech.www.model.TransactionRecord;
+import com.nautestech.www.serviceImpl.CoinProductService;
+import com.nautestech.www.serviceImpl.TransactionService;
+
+@Controller
+public class AdminController {
+
+	private final TransactionService transactionService;
+	private final CoinProductService coinProductService;
+
+	public AdminController(TransactionService transactionService, CoinProductService coinProductService) {
+		this.transactionService = transactionService;
+		this.coinProductService = coinProductService;
+	}
+
+	@RequestMapping(value = "/admin/menu", method = { RequestMethod.GET, RequestMethod.POST })
+	public String routingTableAdd(Pageable pageable, @ModelAttribute TransactionRecord transaction, Model model) {
+		Page<TransactionRecord> menuPage = transactionService.getTransactionRecord(transaction, pageable);
+		List<TransactionRecord> transactions = menuPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (menuPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < menuPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= menuPage.getTotalPages()) {
+			if (menuPage.getTotalPages() == 0) {
+				endBlockPage = menuPage.getTotalPages();
+			} else {
+				endBlockPage = menuPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", menuPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", menuPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("transactions", transactions);
+		model.addAttribute("paging", paging);
+
+		transactionService.setupdate();
+
+		return "/admin/transaction";
+	}
+
+	@RequestMapping(value = "/admin/menu", method = { RequestMethod.GET, RequestMethod.POST })
+	public String routingTableAdd(Pageable pageable, @ModelAttribute TransactionRecord transaction, Model model) {
+		Page<TransactionRecord> menuPage = transactionService.getTransactionRecord(transaction, pageable);
+		List<TransactionRecord> transactions = menuPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (menuPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < menuPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= menuPage.getTotalPages()) {
+			if (menuPage.getTotalPages() == 0) {
+				endBlockPage = menuPage.getTotalPages();
+			} else {
+				endBlockPage = menuPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", menuPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", menuPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("transactions", transactions);
+		model.addAttribute("paging", paging);
+
+		coinService.setupdate();
+
+		return "/admin/coin";
+	}
+}

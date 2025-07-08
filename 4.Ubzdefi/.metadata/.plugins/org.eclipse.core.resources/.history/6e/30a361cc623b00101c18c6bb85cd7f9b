@@ -1,0 +1,33 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+
+@RestController
+public class OTPSetupController {
+
+	@Autowired
+	private GoogleOTPService googleOTPService;
+
+	@GetMapping("/otp/setup")
+	public Map<String, String> setupOTP(@RequestParam String email) {
+		String secret = googleOTPService.createSecretKey(); // 사용자마다 저장
+		String issuer = "MySystem";
+
+		// DB 등에 email - secret 매핑 저장해야 함
+
+		String qrText = googleOTPService.buildQrText(secret, email, issuer);
+
+		Map<String, String> response = new HashMap<>();
+		response.put("secret", secret);
+		response.put("qrText", qrText); // 이걸 /generateQRCode?text=... 에 넣으면 QR 생성
+		return response;
+	}
+}

@@ -1,0 +1,12 @@
+package com.nautestech.www.config;
+
+import org.springframework.context.annotation.Bean;
+
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+
+public class GoogleConfiguration {
+	@Bean
+	public GoogleAuthenticator googleAuthenticator() {
+		return new GoogleAuthenticator();
+	}
+}

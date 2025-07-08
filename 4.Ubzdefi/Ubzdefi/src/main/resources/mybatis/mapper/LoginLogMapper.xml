@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.LoginLogMapper">
+    <insert id="insertLoginLog" parameterType="com.nautestech.www.model.LoginLog">
+        INSERT INTO t_login_logs (admin_id, login_id, login_result, login_reason, login_ip, user_agent, auth_type, auth_result)
+        VALUES (#{admin_id}, #{login_id}, #{login_result}, #{login_reason}, #{login_ip}, #{user_agent}, #{auth_type}, #{auth_result});
+    </insert>
+</mapper>

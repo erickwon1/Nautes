@@ -1,0 +1,29 @@
+package utils;
+
+import java.io.File;
+import java.io.FileWriter;
+
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class InputLog {
+	private final File logFile;
+
+	public InputLog(String filePath) {
+		this.logFile = new File(filePath);
+		try {
+			if (!logFile.exists()) {
+				logFile.createNewFile();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void inputLog(String message) {
+		File file = new File("");
+		FileWriter writer = new FileWriter(file, true);
+		writer.write(message);
+		writer.flush();
+	}
+}

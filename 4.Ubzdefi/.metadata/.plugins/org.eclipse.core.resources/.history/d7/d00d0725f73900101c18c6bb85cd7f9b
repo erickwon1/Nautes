@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.TransactionMapper">
+	<resultMap type="transaction" id="transactionMap" >
+		<result property="id" column="id"/>
+		<result property="amount" column="amount"/>
+		<result property="created_at" column="created_at"/>
+		<result property="from_address" column="from_address"/>
+		<result property="to_address" column="to_address"/>
+		<result property="token_address" column="token_address"/>
+		<result property="tx_hash" column="tx_hash"/>
+		<result property="money" column="money"/>
+		<result property="period" column="period"/>
+		<result property="coin_name" column="coin_name"/>
+		<result property="token_ticker" column="token_ticker"/>
+		<result property="mainnet" column="mainnet"/>
+		<result property="complete" column="complete"/>
+		<result property="product_id" column="product_id"/>
+	</resultMap>
+    <select id="getTransactionRecord" parameterType="com.nautestech.www.model.TransactionRecord" resultMap="transactionMap">
+        SELECT * FROM t_transaction_record
+        WHERE 1=1
+        ORDER BY created_at DESC
+        LIMIT #{pageable.offset}, #{pageable.pageSize};
+    </select>
+    <select id="getTransactionRecordCount" parameterType="com.nautestech.www.model.TransactionRecord" resultType="int">
+        SELECT COUNT(*) FROM t_transaction_record
+        WHERE 1=1
+    </select>
+</mapper>

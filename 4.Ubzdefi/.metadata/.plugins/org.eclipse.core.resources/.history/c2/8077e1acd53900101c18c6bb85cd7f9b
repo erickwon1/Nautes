@@ -1,0 +1,14 @@
+package com.nautestech.www.serviceImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.model.Admin;
+
+@Service
+public class AdminService {
+	private final AdminMapper adminMapper;
+
+	public Admin findById(String login_id) {
+
+	}
+}

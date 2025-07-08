@@ -1,0 +1,5 @@
+package com.nautestech.www.mapper;
+
+public interface AdminMapper {
+
+}

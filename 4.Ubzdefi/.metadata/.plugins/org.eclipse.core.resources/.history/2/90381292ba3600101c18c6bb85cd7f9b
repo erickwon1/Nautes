@@ -1,0 +1,20 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class Ubz {
+	int id;
+	String tokenTicker;
+	String amount;
+	String toAddress;
+	String desiredDate;
+	String money;
+	String mainnet;
+	String coinadress;
+	String coinname;
+	String txid;
+	String complete;
+	String txHash;
+	String stringerr;
+}

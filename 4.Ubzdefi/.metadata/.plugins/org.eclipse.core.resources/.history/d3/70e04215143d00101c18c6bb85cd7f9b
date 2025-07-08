@@ -1,0 +1,36 @@
+package com.nautestech.www.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class OTPController {
+
+	private final GoogleOTPService googleOTPService;
+	private final AdminService adminService;
+
+	@PostMapping("/otp/setupPage")
+	public String otpSetupPage(@RequestParam String login_id, Model model) {
+		String secret = googleOTPService.createSecretKey();
+		String issuer = "UBZ DEFI";
+
+		adminService.saveOtpSecret(login_id, secret);
+
+		String qrText = googleOTPService.buildQrText(secret, login_id, issuer);
+
+		model.addAttribute("qrText", qrText);
+		model.addAttribute("secret", secret);
+		model.addAttribute("login_id", login_id);
+
+		return "otp/otp-setup";
+	}
+
+}

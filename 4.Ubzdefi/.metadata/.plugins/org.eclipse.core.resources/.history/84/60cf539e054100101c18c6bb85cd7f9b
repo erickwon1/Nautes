@@ -1,0 +1,15 @@
+package utils;
+
+import java.io.File;
+import java.io.FileWriter;
+
+public class InputLog {
+
+	public void inputLog() {
+		File file = new File("");
+		FileWriter writer = new FileWriter(file, true);
+		String message;
+		writer.write(message);
+		writer.flush();
+	}
+}

@@ -1,0 +1,32 @@
+package com.nautestech.www.serviceImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.stereotype.Service;
+import org.springframework.util.RouteMatcher.Route;
+
+import com.nautestech.www.mapper.AdminMenuMapper;
+
+@Service
+public class AdminMenuService {
+	private final AdminMenuMapper adminMenuMapper;
+
+	public AdminMenuService(AdminMenuMapper adminMenuMapper) {
+		this.adminMenuMapper = adminMenuMapper;
+	}
+
+	public Page<Route> getRoutes(Route route, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(route).pageable(pageable).build();
+
+		List<Route> content = adminMenuMapper.getRoutes(requestList);
+		int total = adminMenuMapper.getRoutesCount(requestList);
+
+		return new PageImpl<Route>(content, pageable, total);
+	}
+
+	public void setupdate() {
+		routeMapper.updateRoutes();
+	}
+}

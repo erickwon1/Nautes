@@ -1,0 +1,71 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.GoogleOTPService;
+
+import lombok.AllArgsConstructor;
+
+@RestController
+@AllArgsConstructor
+public class OTPController {
+
+	private final GoogleOTPService googleOTPService;
+	private final AdminService adminService;
+
+	@GetMapping("/otp/setupPage")
+	public String otpSetupPage(@RequestParam String login_id, Model model) {
+		String secret = googleOTPService.createSecretKey();
+		String issuer = "MySystem";
+
+		// secret을 DB에 저장
+		adminService.saveOtpSecret(login_id, secret);
+
+		String qrText = googleOTPService.buildQrText(secret, login_id, issuer);
+
+		model.addAttribute("qrText", qrText);
+		model.addAttribute("secret", secret);
+		model.addAttribute("login_id", login_id);
+
+		return "otp-setup";
+	}
+
+	@GetMapping("/otp/setup")
+	public Map<String, String> setupOTP(@RequestParam String login_id) {
+		String secret = googleOTPService.createSecretKey(); // 사용자마다 저장
+		String issuer = "MySystem";
+
+		// DB 등에 email - secret 매핑 저장해야 함
+
+		String qrText = googleOTPService.buildQrText(secret, login_id, issuer);
+
+		Map<String, String> response = new HashMap<>();
+		response.put("secret", secret);
+		response.put("qrText", qrText); // 이걸 /generateQRCode?text=... 에 넣으면 QR 생성
+		return response;
+	}
+
+	@PostMapping("/otp/verify")
+	public ResponseEntity<?> verifyOTP(@RequestParam String login_id, @RequestParam int code) {
+
+		String secret = googleOTPService.getOTP(login_id);
+
+		boolean isValid = googleOTPService.verifyCode(secret, code);
+
+		if (isValid) {
+			return ResponseEntity.ok("인증 성공");
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패");
+		}
+	}
+}

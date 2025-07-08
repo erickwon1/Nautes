@@ -1,0 +1,98 @@
+package com.nautestech.www.controller;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.nautestech.www.model.CoinProduct;
+import com.nautestech.www.model.TransactionRecord;
+import com.nautestech.www.serviceImpl.CoinProductService;
+import com.nautestech.www.serviceImpl.TransactionService;
+
+@Controller
+public class AdminController {
+
+	private final TransactionService transactionService;
+	private final CoinProductService coinProductService;
+
+	public AdminController(TransactionService transactionService, CoinProductService coinProductService) {
+		this.transactionService = transactionService;
+		this.coinProductService = coinProductService;
+	}
+
+	@RequestMapping(value = "/admin/coin", method = { RequestMethod.GET, RequestMethod.POST })
+	public String coin(Pageable pageable, @ModelAttribute CoinProduct coin,
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, Model model) {
+		Page<CoinProduct> coinPage = coinProductService.getCoinProduct(coin, pageable, startDate, endDate);
+		List<CoinProduct> coins = coinPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (coinPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < coinPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= coinPage.getTotalPages()) {
+			if (coinPage.getTotalPages() == 0) {
+				endBlockPage = coinPage.getTotalPages();
+			} else {
+				endBlockPage = coinPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", coinPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", coinPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("coins", coins);
+		model.addAttribute("paging", paging);
+
+		return "/admin/coin";
+	}
+
+	@RequestMapping(value = "/admin/transaction", method = { RequestMethod.GET, RequestMethod.POST })
+	public String transaction(Pageable pageable, @ModelAttribute TransactionRecord transaction,
+			@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, Model model) {
+		Page<TransactionRecord> transactionPage = transactionService.getTransactionRecord(transaction, pageable);
+		List<TransactionRecord> transactions = transactionPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (transactionPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < transactionPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= transactionPage.getTotalPages()) {
+			if (transactionPage.getTotalPages() == 0) {
+				endBlockPage = transactionPage.getTotalPages();
+			} else {
+				endBlockPage = transactionPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", transactionPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", transactionPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("transactions", transactions);
+		model.addAttribute("paging", paging);
+
+		return "/admin/transaction";
+	}
+}

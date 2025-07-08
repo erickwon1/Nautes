@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.AdminMapper">
+	<resultMap type="admin" id="adminMap" >
+		<result property="admin_id" column="admin_id"/>
+		<result property="is_use" column="is_use"/>
+		<result property="admin_name" column="admin_name"/>
+		<result property="login_id" column="login_id"/>
+		<result property="login_pwd" column="login_pwd"/>
+		<result property="admin_phone" column="admin_phone"/>
+		<result property="auth_type" column="auth_type"/>
+		<result property="auth_secret" column="auth_secret"/>
+		<result property="auth_datetime" column="auth_datetime"/>
+		<result property="login_datetime_befor" column="login_datetime_befor"/>
+		<result property="login_datetime" column="login_datetime"/>
+		<result property="login_ip" column="login_ip"/>
+		<result property="e_mail" column="e_mail"/>
+		<result property="creat_user" column="creat_user"/>
+		<result property="creat_datetime" column="creat_datetime"/>
+	</resultMap>
+    <select id="findById" parameterType="String" resultMap="adminMap">
+        SELECT * FROM t_admin WHERE login_id = #{login_id};
+    </select>
+    <update id="updatePassword" parameterType="map">
+    	UPDATE t_admin
+    	SET login_pwd = #{encodedPassword}
+    	WHERE login_id = #{login_id}
+	</update>
+</mapper>

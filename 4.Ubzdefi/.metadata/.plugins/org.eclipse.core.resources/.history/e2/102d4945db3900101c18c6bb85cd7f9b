@@ -1,0 +1,115 @@
+package com.nautestech.www.controller;
+
+import java.time.LocalDateTime;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.Admin;
+import com.nautestech.www.model.CustomUserDetail;
+import com.nautestech.www.model.SMS;
+import com.nautestech.www.serviceImpl.AdminService;
+import com.nautestech.www.serviceImpl.CustomUserDetailsService;
+import com.nautestech.www.serviceImpl.SMSService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import utils.CertificationNumber;
+
+@Controller
+@RequiredArgsConstructor
+public class LoginController {
+
+	private final CustomUserDetailsService userDetailsService;
+	private final SMSService smsService;
+	private final AdminService adminService;
+
+	@RequestMapping(value = "/", method = { RequestMethod.GET, RequestMethod.POST })
+	public String loginPage(@RequestParam(required = false) String error) {
+		if (error != null) {
+			System.err.println("로그인 실패");
+		}
+		return "login/login";
+	}
+
+	@PostMapping("/preLogin")
+	@ResponseBody
+	public ResponseEntity<?> preLogin(HttpServletRequest request, @RequestParam("login_id") String loginId,
+			@RequestParam("login_pwd") String loginpwd) {
+
+		CustomUserDetail user = (CustomUserDetail) userDetailsService.loadUserByUsername(loginId);
+		PasswordEncoder encoder = new BCryptPasswordEncoder();
+
+		if (user == null || !encoder.matches(loginpwd, user.getPassword())) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 잘못되었습니다.");
+		}
+
+		CertificationNumber certGen = new CertificationNumber();
+		int code = certGen.createCertification_Number(6);
+
+		Admin admin = adminService.findById(loginId);
+
+		HttpSession session = request.getSession();
+		session.setAttribute("pre_auth_user", user);
+		session.setAttribute("auth_code", String.valueOf(code));
+		session.setMaxInactiveInterval(180); // 3분
+
+		SMS sms = new SMS();
+		sms.setSend_phone(admin.getAdmin_phone());
+		sms.setReceive_phone(user.getPhone()); // 유저 객체 내 휴대폰 번호 있다고 가정
+		sms.setSms_content("인증번호는 [" + codeStr + "] 입니다.");
+		sms.setIs_send("N"); // 전송 전
+		sms.setIs_reserve("N");
+		sms.setRequest_user(admin.getAdmin_id());
+		sms.setReceive_user(user.getUsername());
+		sms.setRequest_datetime(LocalDateTime.now().toString());
+		sms.setCreate_datetime(LocalDateTime.now().toString());
+
+		smsService.save(sms); // DB에 저장 (insert 쿼리 필요)
+
+		return ResponseEntity.ok("인증번호가 발송되었습니다.");
+	}
+
+	@PostMapping("/verifyCode")
+	@ResponseBody
+	public ResponseEntity<?> verifyCode(HttpServletRequest request, @RequestParam("code") String code) {
+		HttpSession session = request.getSession(false);
+		if (session == null)
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("세션이 만료되었습니다.");
+
+		String savedCode = (String) session.getAttribute("auth_code");
+		CustomUserDetail user = (CustomUserDetail) session.getAttribute("pre_auth_user");
+
+		if (savedCode == null || user == null)
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 요청입니다.");
+
+		if (!savedCode.equals(code))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증번호가 틀렸습니다.");
+
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getUsername(), null,
+				user.getAuthorities());
+
+		SecurityContextHolder.getContext().setAuthentication(auth);
+		session.removeAttribute("auth_code");
+		session.removeAttribute("pre_auth_user");
+
+		return ResponseEntity.ok("로그인 성공");
+	}
+
+	@RequestMapping(value = "/logout", method = { RequestMethod.GET, RequestMethod.POST })
+	public String logoutPage(HttpSession session) {
+		session.invalidate();
+		return "login/login";
+	}
+}

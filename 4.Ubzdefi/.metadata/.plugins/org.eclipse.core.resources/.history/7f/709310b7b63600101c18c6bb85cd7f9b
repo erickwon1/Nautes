@@ -1,0 +1,12 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface AdminMenuMapper {
+	public List<Route> getRoutes(RequestList<?> requestList);
+
+	public int getRoutesCount(RequestList<?> requestList);
+
+	public Route findBySrc(String r_src);
+}

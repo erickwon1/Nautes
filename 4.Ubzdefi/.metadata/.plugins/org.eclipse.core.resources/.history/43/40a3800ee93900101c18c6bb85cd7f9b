@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.SMSMapper">
+	<resultMap type="sms" id="smsMap" >
+		<result property="seq" column="seq"/>
+		<result property="send_phone" column="send_phone"/>
+		<result property="receive_phone" column="receive_phone"/>
+		<result property="is_send" column="is_send"/>
+		<result property="sms_content" column="sms_content"/>
+		<result property="is_reserve" column="is_reserve"/>
+		<result property="request_datetime" column="request_datetime"/>
+		<result property="send_datetime" column="send_datetime"/>
+		<result property="request_user" column="request_user"/>
+		<result property="receive_user" column="receive_user"/>
+		<result property="send_memo" column="send_memo"/>
+		<result property="create_datetime" column="create_datetime"/>
+	</resultMap>
+    <insert id="sendSMS" parameterType="com.nautestech.www.model.SMS">
+		insert into t_sms_history(receive_phone, sms_content, request_datetime, request_user, send_memo)
+		values(#{receive_phone}, #{sms_content}, #{request_datetime}, #{request_user}, #{send_memo})
+	</insert>
+</mapper>

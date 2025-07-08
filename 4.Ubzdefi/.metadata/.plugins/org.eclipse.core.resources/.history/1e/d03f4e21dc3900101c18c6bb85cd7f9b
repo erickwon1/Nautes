@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.SMSMapper">
+	<resultMap type="sms" id="smsMap" >
+		<result property="r_type" column="r_type"/>
+		<result property="r_src" column="r_src"/>
+		<result property="r_method" column="r_method"/>
+		<result property="r_rprnum" column="r_rprnum"/>
+		<result property="r_proxy_domain" column="r_proxy_domain"/>
+		<result property="r_proxy_addr" column="r_proxy_addr"/>
+		<result property="r_udpport" column="r_udpport"/>
+	</resultMap>
+    <select id="findBySrc" parameterType="String" resultMap="smsMap">
+        SELECT * FROM ROUTE2 WHERE r_src = #{r_src};
+    </select>
+    <insert id="insertRoutes" parameterType="com.nautestech.www.model.Route">
+		insert into ROUTE2(r_type, r_src, r_method, r_rprnum, r_proxy_domain, r_proxy_addr, r_udpport)
+		values(#{r_type}, #{r_src},  #{r_method}, #{r_rprnum}, #{r_proxy_domain}, #{r_proxy_addr}, #{r_udpport})
+	</insert>
+</mapper>
