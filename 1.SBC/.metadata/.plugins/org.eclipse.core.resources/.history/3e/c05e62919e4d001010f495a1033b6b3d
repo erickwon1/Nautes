@@ -1,0 +1,19 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class SysConfig {
+	String sbc_id;
+	int sip_port;
+	String use_protocol;
+	int media_trans_mod;
+	int always_nat;
+	int sscs_port;
+	String mrms_addr;
+	int mrms_port;
+	int mrws_port;
+	int ping_pong_count;
+	int re_regist_time;
+	int expire_time;
+}

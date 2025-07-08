@@ -1,0 +1,15 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class ProxyChkList {
+	int px_cnt;
+	String px_domain;
+	String px_addr;
+	int px_port;
+	String px_from;
+	String px_to;
+	int opt_chkcount;
+	int opt_sndterm;
+}

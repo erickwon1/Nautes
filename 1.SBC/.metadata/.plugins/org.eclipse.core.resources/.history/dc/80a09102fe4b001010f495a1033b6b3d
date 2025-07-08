@@ -1,0 +1,22 @@
+package com.nautestech.www.model;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class Route {
+	private Integer r_cnt;
+	private Integer r_type;
+	@NotBlank(message = "필수입력 사항입니다.")
+	private String r_src;
+	private String r_method;
+	private String r_rprnum;
+	@NotBlank(message = "필수입력 사항입니다.")
+	private String r_proxy_domain;
+	@NotBlank(message = "필수입력 사항입니다.")
+	private String r_proxy_addr;
+	private Integer r_udpport;
+	private int r_tcpport;
+	private int r_tlsport;
+	private String memo;
+}

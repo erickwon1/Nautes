@@ -1,0 +1,98 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.RegPhone;
+import com.nautestech.www.servicImpl.RegPhoneService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class RegPhoneController {
+	private RegPhoneService regPhoneService;
+
+	@RequestMapping(value = "/management/regPhone_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String regPhonedd(Pageable pageable, @ModelAttribute RegPhone regPhone, Model model) {
+		Page<RegPhone> regPhonePage = regPhoneService.getIpPools(regPhone, pageable);
+		List<RegPhone> regphones = regPhonePage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (regPhonePage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < regPhonePage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= regPhonePage.getTotalPages()) {
+			if (regPhonePage.getTotalPages() == 0) {
+				endBlockPage = regPhonePage.getTotalPages();
+			} else {
+				endBlockPage = regPhonePage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", regPhonePage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", regPhonePage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("regphones", regphones);
+		model.addAttribute("paging", paging);
+
+		return "/management/ipPools_add";
+	}
+
+	@PostMapping("/management/regPhone_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> regPhonedd(@Valid @ModelAttribute RegPhone regPhone) {
+		regPhoneService.setinsert(regPhone);
+		regPhoneService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/regPhone_add/delete")
+	@ResponseBody
+	public int deleteRegPhone(@RequestBody Map<String, List<String>> requestData) {
+		List<String> rp_seq = requestData.get("rp_seq");
+		List<Integer> iList = rp_seq.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = regPhoneService.setdelete(iList);
+		regPhoneService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/regPhone_add/modify")
+	@ResponseBody
+	public void modifyRegPhone(@RequestBody Map<String, Object> requestData) {
+		List<String> rp_seq = (List<String>) requestData.get("rp_seq");
+		List<Integer> rpList = rp_seq.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		Integer i_id = requestData.get("i_id") != null ? Integer.parseInt(requestData.get("i_id").toString()) : null;
+		String i_local = requestData.get("i_local") != null ? requestData.get("i_local").toString() : null;
+		String i_zone = requestData.get("i_zone") != null ? requestData.get("i_zone").toString() : null;
+
+		RegPhone regPhone = new RegPhone();
+		regPhone.setI_id(i_id);
+		regPhone.setI_local(i_local);
+		regPhone.setI_zone(i_zone);
+
+		regPhoneService.setupdate();
+		regPhoneService.setmodify(rpList, regPhone);
+	}
+}

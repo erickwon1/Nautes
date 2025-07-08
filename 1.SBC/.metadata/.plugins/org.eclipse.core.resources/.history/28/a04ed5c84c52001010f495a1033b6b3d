@@ -1,0 +1,55 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.model.ExRoute;
+import com.nautestech.www.model.IpPools;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class IpPoolsService implements delete {
+	IpPoolsMapper ipPoolsMapper;
+
+	public ExRoute FindByExId(String ex_id) {
+		return ipPoolsMapper.FindByExId(ex_id);
+	}
+
+	public void setinsert(ExRoute exRoute) {
+		ipPoolsMapper.setinsert(exRoute);
+	}
+
+	public void setmodify(ExRoute exRoute) {
+		ipPoolsMapper.setmodify(exRoute);
+	}
+
+	public void setmodifybyCnt(List<Integer> exList, ExRoute exRoute) {
+		ipPoolsMapper.setmodifybyCnt(exList, exRoute);
+	}
+
+	public void setupdate() {
+		ipPoolsMapper.setupdate();
+	}
+
+	public Page<IpPools> getExRoutes(ExRoute exRoute, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(exRoute).pageable(pageable).build();
+
+		List<IpPools> content = ipPoolsMapper.getExRoutes(requestList);
+		int total = ipPoolsMapper.getExRoutesCount(requestList);
+
+		return new PageImpl<IpPools>(content, pageable, total);
+	}
+
+	@Override
+	public int setdelete(List<Integer> iList) {
+		return ipPoolsMapper.setdelete(iList);
+	}
+}

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.ExRouteMapper">
+	<resultMap type="exroute" id="exrouteMap">
+		<result property="ex_cnt" column="ex_cnt" />
+		<result property="ex_id" column="ex_id" />
+		<result property="pri_domain" column="pri_domain" />
+		<result property="pri_addr" column="pri_addr" />
+		<result property="pri_priorty" column="pri_priorty" />
+		<result property="pri_port" column="pri_port" />
+		<result property="sec_domain" column="sec_domain" />
+		<result property="sec_addr" column="sec_addr" />
+		<result property="sec_priorty" column="sec_priorty" />
+		<result property="sec_port" column="sec_port" />
+	</resultMap>
+	<select id="FindByExId" parameterType="String" resultMap="exrouteMap">
+		SELECT * FROM EX_ROUTE WHERE ex_id = #{ex_id};
+	</select>
+	<insert id="insert" parameterType="ExRoute">
+		INSERT INTO EX_ROUTE (
+		ex_id, pri_domain, pri_addr, pri_priorty, pri_port,
+		sec_domain, sec_addr, sec_priorty, sec_port
+		)
+		VALUES (
+		#{ex_id}, #{pri_domain}, #{pri_addr}, #{pri_priorty}, #{pri_port},
+		#{sec_domain}, #{sec_addr}, #{sec_priorty}, #{sec_port}
+		)
+	</insert>
+	<update id="update" parameterType="ExRoute">
+		UPDATE EX_ROUTE
+		SET
+		pri_domain = #{pri_domain},
+		pri_addr = #{pri_addr},
+		pri_priorty = #{pri_priorty},
+		pri_port = #{pri_port},
+		sec_domain = #{sec_domain},
+		sec_addr = #{sec_addr},
+		sec_priorty = #{sec_priorty},
+		sec_port = #{sec_port}
+		WHERE ex_cnt = #{ex_cnt}
+	</update>
+	<update id="update">
+		UPDATE modified_table set ROUTE2='1';
+	</update>
+</mapper>

@@ -1,0 +1,55 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.ExRouteMapper;
+import com.nautestech.www.model.ExRoute;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class ExRouteService implements delete {
+	ExRouteMapper exRouteMapper;
+
+	public ExRoute FindByExId(String ex_id) {
+		return exRouteMapper.FindByExId(ex_id);
+	}
+
+	public void setinsert(ExRoute exRoute) {
+		exRouteMapper.setinsert(exRoute);
+	}
+
+	public void setmodify(ExRoute exRoute) {
+		exRouteMapper.setmodify(exRoute);
+	}
+
+	public void setmodify(List<Integer> exList, ExRoute exRoute) {
+		exRouteMapper.setmodify(exList, exRoute);
+	}
+
+	public void setupdate() {
+		exRouteMapper.setupdate();
+	}
+
+	public Page<ExRoute> getExRoutes(ExRoute exRoute, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(exRoute).pageable(pageable).build();
+
+		List<ExRoute> content = exRouteMapper.getExRoutes(requestList);
+		int total = exRouteMapper.getExRoutesCount(requestList);
+
+		return new PageImpl<ExRoute>(content, pageable, total);
+	}
+
+	@Override
+	public int setdelete(List<Integer> exList) {
+		return exRouteMapper.setdelete(exList);
+	}
+}

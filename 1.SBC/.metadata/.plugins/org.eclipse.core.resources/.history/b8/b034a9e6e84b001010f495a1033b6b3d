@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.RouteMapper">
+	<resultMap type="proxyChkList" id="proxyChkListMap" >
+		<result property="px_cnt" column="px_cnt" />
+		<result property="px_domain" column="px_domain" />
+		<result property="px_addr" column="px_addr" />
+		<result property="px_port" column="px_port" />
+		<result property="px_from" column="px_from" />
+		<result property="px_to" column="px_to" />
+		<result property="opt_chkcount" column="opt_chkcount" />
+		<result property="opt_sndterm" column="opt_sndterm" />
+	</resultMap>
+    <select id="getRoutes" parameterType="com.nautestech.www.model.ProxyChkList" resultMap="proxyChkListMap">
+        SELECT * FROM ROUTE2
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.r_type != null and data.r_type != '-1'">
+            	 AND r_type LIKE CONCAT('%', #{data.r_type}, '%')
+        	</if>
+         	<if test="data.r_method != null and data.r_method != ''">
+            	 AND r_method LIKE CONCAT('%', #{data.r_method}, '%')
+        	</if>
+        	 <if test="data.r_src != null and data.r_src != ''">
+            	AND r_src LIKE CONCAT('%', #{data.r_src}, '%')
+        	</if>
+        	<if test="data.r_rprnum != null and data.r_rprnum != ''">
+            	AND r_rprnum LIKE CONCAT('%', #{data.r_rprnum}, '%')
+        	</if>
+        	<if test="data.r_proxy_domain != null and data.r_proxy_domain != ''">
+            	AND r_proxy_domain LIKE CONCAT('%', #{data.r_proxy_domain}, '%')
+        	</if>
+        	<if test="data.r_proxy_addr != null and data.r_proxy_addr != ''">
+            	AND r_proxy_addr LIKE CONCAT('%', #{data.r_proxy_addr}, '%')
+        	</if>
+			<if test="data.r_udpport != null and data.r_udpport != ''">
+				AND r_udpport = #{data.r_udpport}
+			</if>
+			<if test="data.memo != null and data.memo != ''">
+				AND memo = #{data.memo}
+			</if>
+		</trim>
+		ORDER BY r_src ASC
+		LIMIT #{pageable.offset}, #{pageable.pageSize};
+    </select>
+    <select id="getRoutesCount" parameterType="com.nautestech.www.model.CurrentSessionInfo" resultType="int">
+        SELECT COUNT(*) FROM ROUTE2
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.r_type != null and data.r_type != '-1'">
+            	 AND r_type LIKE CONCAT('%', #{data.r_type}, '%')
+        	</if>
+         	<if test="data.r_method != null and data.r_method != ''">
+            	 AND r_method LIKE CONCAT('%', #{data.r_method}, '%')
+        	</if>
+        	 <if test="data.r_src != null and data.r_src != ''">
+            	AND r_src LIKE CONCAT('%', #{data.r_src}, '%')
+        	</if>
+        	<if test="data.r_rprnum != null and data.r_rprnum != ''">
+            	AND r_rprnum LIKE CONCAT('%', #{data.r_rprnum}, '%')
+        	</if>
+        	<if test="data.r_proxy_domain != null and data.r_proxy_domain != ''">
+            	AND r_proxy_domain LIKE CONCAT('%', #{data.r_proxy_domain}, '%')
+        	</if>
+        	<if test="data.r_proxy_addr != null and data.r_proxy_addr != ''">
+				AND r_proxy_addr LIKE CONCAT('%', #{data.r_proxy_addr}, '%')
+			</if>
+			<if test="data.r_udpport != null and data.r_udpport != ''">
+				AND r_udpport = #{data.r_udpport}
+			</if>
+			<if test="data.memo != null and data.memo != ''">
+				AND memo LIKE CONCAT('%', #{data.memo}, '%')
+			</if>
+		</trim>
+    </select>
+    <select id="findBySrc" parameterType="String" resultMap="routeMap">
+		SELECT * FROM ROUTE2 WHERE r_src = #{r_src};
+	</select>
+	<insert id="insertRoutes" parameterType="com.nautestech.www.model.Route">
+		insert into ROUTE2(r_type, r_src, r_method, r_rprnum, r_proxy_domain,
+		r_proxy_addr, r_udpport, memo)
+		values(#{r_type}, #{r_src}, #{r_method}, #{r_rprnum}, #{r_proxy_domain},
+		#{r_proxy_addr}, #{r_udpport}, #{memo})
+	</insert>
+	<delete id="deleteRoutes" parameterType="java.util.List"> DELETE FROM ROUTE2
+		WHERE r_cnt IN <foreach item="r_cnt" collection="r_cnt" open="("
+			separator="," close=")">
+			#{r_cnt}
+		</foreach>
+	</delete>
+	<update id="updateRoutes">
+		UPDATE modified_table set ROUTE2='1';
+	</update>
+	<update id="setmodify"> UPDATE ROUTE2 SET r_type = #{route.r_type}, r_src =
+		#{route.r_src}, r_method = #{route.r_method}, r_rprnum =
+		#{route.r_rprnum}, r_proxy_domain = #{route.r_proxy_domain},
+		r_proxy_addr = #{route.r_proxy_addr}, r_udpport = #{route.r_udpport},
+		memo = #{route.memo} WHERE r_cnt IN <foreach item="r_cnt"
+			collection="r_cnt" open="("
+			separator="," close=")">
+			#{r_cnt}
+		</foreach>
+	</update>
+</mapper>

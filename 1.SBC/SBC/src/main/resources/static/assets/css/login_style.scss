@@ -1,0 +1,65 @@
+@charset "utf-8";
+.login_con > div {
+    min-height: calc(100vh - 70px);
+  }
+.login_con .card{
+   width: 460px;
+   max-width: calc(100vw - 1rem);
+}
+.login_con .logo_wrap img{
+    max-width: 250px;
+}
+.login_con h1{
+    font-size: 2rem;
+}
+.login_con h2{
+    font-size: 1.6rem;
+}
+.login_con .check_wrap li{
+    width: 30%;
+}
+.login_con .check_wrap li .btn{
+    width: 100%;
+}
+.login_con .join a:hover{
+    color: #0D6EFD !important;
+}
+.join_alert{
+    li{
+        position: relative;
+    }
+    li:first-child::before{
+        content: "1.";
+        position: absolute;
+        left: -1.2rem;
+    }
+    li:nth-child(2)::before{
+        content: "2.";
+        position: absolute;
+        left: -1.2rem;
+    }
+}
+@media (max-width: 767px) {
+    .login_con > div {
+        min-height: calc(100vh - 100px);
+      }
+.login_con footer .text-end{
+    text-align: left !important;
+}
+
+}
+@media (max-width: 400px) {
+    .login_con h1{
+        font-size: 1.4rem;
+    }
+    .login_con .check_wrap {
+        flex-wrap: wrap;
+    }
+    .login_con .check_wrap li:first-child{
+        margin-top: 0px;
+    }
+    .login_con .check_wrap li{
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}

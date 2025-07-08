@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<list key="EGit.KnownHosts">
+		<item value="github.com"/>
+		<item value="git.eclipse.org"/>
+		<item value="bitbucket.org"/>
+	</list>
+	<list key="RepositorySelectionPage.UsedUris">
+		<item value="https://bitbucket.org/dlsnditi6155/edu.git"/>
+	</list>
+	<section name="org.eclipse.egit.ui.COMMIT_DIALOG_SECTION">
+		<item key="DIALOG_X_ORIGIN" value="-55"/>
+		<item key="DIALOG_Y_ORIGIN" value="-267"/>
+		<item key="DIALOG_WIDTH" value="642"/>
+		<item key="DIALOG_HEIGHT" value="649"/>
+		<item key="DIALOG_FONT_NAME" value="1|맑은 고딕|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|맑은 고딕"/>
+	</section>
+</section>

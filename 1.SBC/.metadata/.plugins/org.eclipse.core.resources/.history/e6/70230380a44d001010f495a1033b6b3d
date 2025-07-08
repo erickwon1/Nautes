@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.SysConfigMapper">
+	<resultMap type="sysconfig" id="sysconfigMap" >
+		<result property="px_cnt" column="px_cnt" />
+		<result property="px_domain" column="px_domain" />
+		<result property="px_addr" column="px_addr" />
+		<result property="px_port" column="px_port" />
+		<result property="px_from" column="px_from" />
+		<result property="px_to" column="px_to" />
+		<result property="opt_chkcount" column="opt_chkcount" />
+		<result property="opt_sndterm" column="opt_sndterm" />
+	</resultMap>
+    <select id="getSysConfig" parameterType="com.nautestech.www.model.SysConfigMapper" resultMap="sysconfigMap">
+        SELECT * FROM SYS_CONFIG
+    </select>
+	<update id="updateSysConfig">
+		UPDATE modified_table set SYS_CONFIG='1';
+	</update>
+	<update id="modifySysConfig"> UPDATE PROXY_CHK_LIST SET px_domain =
+		#{proxyChkList.px_domain}, px_addr = #{proxyChkList.px_addr}, px_port =
+		#{proxyChkList.px_port}, px_from = #{proxyChkList.px_from}, px_to =
+		#{proxyChkList.px_to}, opt_chkcount = #{proxyChkList.opt_chkcount},
+		opt_sndterm = #{proxyChkList.opt_sndterm} WHERE px_cnt IN <foreach
+			item="px_cnt"
+			collection="px_cnt" open="("
+			separator="," close=")">
+			#{px_cnt}
+		</foreach>
+	</update>
+</mapper>

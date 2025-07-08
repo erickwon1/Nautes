@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>SBC</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+</head>
+
+<body>
+	<div class="container-xxl login_con">
+		<div class="d-flex container-p-y align-items-center justify-content-center">
+			<div class="authentication-inner">
+				<div class="card">
+					<div class="card-body">
+						<div class="app-brand justify-content-center logo_wrap text-center my-4">
+							<h1 class="text-primary"><strong>SBC</strong></h1>
+							<h2 class="my-2">회원가입</h2>
+						</div>
+						<form id="formAuthentication" class="mb-3" th:action="@{/join}" method="post"
+							th:object="${member}">
+							<div class="mb-3">
+								<label for="join_phone_input" class="form-label">로그인 ID<span
+										class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="join_phone_input" name="member_id"
+									placeholder="로그인 ID를 입력해 주세요." th:field="*{member_id}" />
+								<div th:if="${#fields.hasErrors('member_id')}" class="text-danger"
+									th:errors="*{member_id}"></div>
+							</div>
+							<div class="mb-3">
+								<label for="join_name_input" class="form-label">이름<span
+										class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="join_name_input" name="member_name"
+									placeholder="이름을 입력해 주세요." th:field="*{member_name}" />
+								<div th:if="${#fields.hasErrors('member_name')}" class="text-danger"
+									th:errors="*{member_name}"></div>
+							</div>
+							<div class="mb-3 form-password-toggle">
+								<label class="form-label" for="join_pw_input">비밀번호<span
+										class="text-danger">*</span></label>
+								<input type="password" id="join_pw_input" class="form-control" name="member_password"
+									placeholder="비밀번호를 입력해 주세요." th:field="*{member_password}" />
+								<div th:if="${#fields.hasErrors('member_password')}" class="text-danger"
+									th:errors="*{member_password}"></div>
+							</div>
+							<div class="mb-3 form-password-toggle">
+								<label class="form-label" for="join_cpw_input">비밀번호 재확인<span
+										class="text-danger">*</span></label>
+								<input type="password" id="join_cpw_input" class="form-control"
+									name="member_password_confirm" placeholder="비밀번호를 다시 입력해 주세요."
+									th:field="*{member_password_confirm}" />
+								<div th:if="${#fields.hasErrors('member_password_confirm')}" class="text-danger"
+									th:errors="*{member_password_confirm}"></div>
+							</div>
+							<div class="mb-3">
+								<label for="join_type" class="form-label">구분<span class="text-danger">*</span></label>
+								<select class="form-select" id="join_type" name="member_gubun"
+									th:field="*{member_gubun}">
+									<option value="1">1</option>
+									<option value="2">2</option>
+								</select>
+							</div>
+							<div class="mb-3">
+								<label for="join_etc_input" class="form-label">기타</label>
+								<input type="text" class="form-control" id="join_etc_input" name="member_etc"
+									placeholder="기타사항을 입력해 주세요." th:field="*{member_etc}" />
+							</div>
+							<div class="mb-3 mt-4">
+								<button class="btn btn-primary d-grid w-100" type="submit">회원가입요청</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer class="footer border-top">
+			<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+				<div class="col-12 col-sm-auto text-start">
+					<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+				</div>
+				<div class="col-12 col-sm-auto text-end">
+					<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+				</div>
+			</div>
+		</footer>
+	</div>
+</body>
+
+</html>

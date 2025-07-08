@@ -1,0 +1,14 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class ModifiedTable {
+	Integer cnt;
+	Integer IP_POOLS;
+	Integer RTP_POOLS;
+	Integer MRWS_CONFIG;
+	Integer ROUTE2;
+	Integer PROXY_CHK_LIST;
+	Integer EX_ROUTE;
+}

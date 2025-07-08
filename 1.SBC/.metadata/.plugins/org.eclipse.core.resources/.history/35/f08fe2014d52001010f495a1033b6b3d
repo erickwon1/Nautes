@@ -1,0 +1,27 @@
+package com.nautestech.www.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.nautestech.www.model.ExRoute;
+
+import utils.RequestList;
+
+@Mapper
+public interface IpPoolsMapper {
+	public void setinsert(IpPools ipPools);
+
+	public void setmodify(IpPools ipPools);
+
+	public void setmodifybyCnt(@Param("i_cnt") List<Integer> exList, @Param("ipPools") IpPools ipPools);
+
+	public void setupdate();
+
+	public List<ExRoute> getExRoutes(RequestList<?> requestList);
+
+	public int getExRoutesCount(RequestList<?> requestList);
+
+	public int setdelete(@Param("i_cnt") List<Integer> exList);
+}

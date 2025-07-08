@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.RtpPoolsMapper">
+	<resultMap type="rtppools" id="rtppoolsMap">
+		<result property="r_cnt" column="r_cnt" />
+		<result property="mrws_id" column="mrws_id" />
+		<result property="rtp_loca" column="rtp_loca" />
+		<result property="rtp_zone" column="rtp_zone" />
+	</resultMap>
+	<select id="getRtpPools" parameterType="com.nautestech.www.model.RtpPools"
+		resultMap="rtppoolsMap"> SELECT * FROM RTP_POOLS WHERE 1=1 <trim
+			prefix="AND" prefixOverrides="AND">
+			<if test="data.mrws_id != null and data.mrws_id != ''">
+				AND mrws_id LIKE CONCAT('%', #{data.mrws_id}, '%')
+			</if>
+			<if test="data.rtp_local != null and data.rtp_local != ''">
+				AND rtp_local LIKE CONCAT('%', #{data.rtp_local}, '%')
+			</if>
+			<if test="data.rtp_zone != null and data.rtp_zone != ''">
+				AND rtp_zone LIKE CONCAT('%', #{data.rtp_zone}, '%')
+			</if>
+		</trim>
+		ORDER BY mrws_id ASC LIMIT #{pageable.offset}, #{pageable.pageSize}; </select>
+	<select id="getRtpPoolsCount"
+		parameterType="com.nautestech.www.model.RtpPools" resultType="int">
+		SELECT COUNT(*) FROM RTP_POOLS WHERE 1=1 <trim prefix="AND"
+			prefixOverrides="AND">
+			<if test="data.mrws_id != null and data.mrws_id != ''">
+				AND mrws_id LIKE CONCAT('%', #{data.mrws_id}, '%')
+			</if>
+			<if test="data.rtp_loca != null and data.rtp_loca != ''">
+				AND rtp_loca LIKE CONCAT('%', #{data.rtp_loca}, '%')
+			</if>
+			<if test="data.rtp_zone != null and data.rtp_zone != ''">
+				AND rtp_zone LIKE CONCAT('%', #{data.rtp_zone}, '%')
+			</if>
+		</trim>
+	</select>
+	<insert id="setinsert" parameterType="RtpPools">
+		INSERT INTO RTP_POOLS (
+		i_id, i_local, i_zone
+		)
+		VALUES (
+		#{i_id}, #{i_local}, #{i_zone}
+		)
+	</insert>
+	<update id="setmodify"> UPDATE RTP_POOLS SET mrws_id = #{rtpPools.mrws_id},
+		rtp_loca = #{rtpPools.rtp_loca}, rtp_zone = #{rtpPools.rtp_zone}
+		WHERE r_cnt IN <foreach item="r_cnt"
+			collection="r_cnt" open="("
+			separator="," close=")">
+			#{r_cnt}
+		</foreach>
+	</update>
+	<update id="setupdate">
+		UPDATE modified_table set RTP_POOLS='1';
+	</update>
+	<delete id="setdelete" parameterType="java.util.List"> DELETE FROM RTP_POOLS
+		WHERE r_cnt IN <foreach item="r_cnt" collection="r_cnt" open="("
+			separator="," close=")">
+			#{r_cnt}
+		</foreach>
+	</delete>
+</mapper>

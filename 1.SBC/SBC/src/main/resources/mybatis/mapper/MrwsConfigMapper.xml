@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.MrwsConfigMapper">
+	<resultMap type="mrwsconfig" id="mrwsconfigMap">
+		<result property="mrws_id" column="mrws_id" />
+		<result property="mrws_type" column="mrws_type" />
+		<result property="mrws_addr" column="mrws_addr" />
+		<result property="bandwidth" column="bandwidth" />
+		<result property="mrws_rtp_base_port" column="mrws_rtp_base_port" />
+		<result property="mrws_rtp_port_range" column="mrws_rtp_port_range" />
+	</resultMap>
+	<select id="getMrwsConfig"
+		parameterType="com.nautestech.www.model.MrwsConfig"
+		resultMap="mrwsconfigMap">
+		SELECT * FROM MRWS_CONFIG
+	</select>
+	<update id="modifyMrwsConfig"> UPDATE MRWS_CONFIG SET mrws_id = #{mrws_id},
+		mrws_type = #{mrws_type}, mrws_addr = #{mrws_addr}, bandwidth
+		= #{bandwidth}, mrws_rtp_base_port = #{mrws_rtp_base_port},
+		mrws_rtp_port_range =
+		#{mrws_rtp_port_range}
+	</update>
+	<update id="setupdate">
+		UPDATE modified_table set MRWS_CONFIG='1';
+	</update>
+</mapper>

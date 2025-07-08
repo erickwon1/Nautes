@@ -1,0 +1,22 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.ModifiedtableMapper;
+import com.nautestech.www.model.ModifiedTable;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class ModifiedtableService {
+	private final ModifiedtableMapper modifiedtableMapper;
+
+	public ModifiedTable getModifiedTable() {
+		return modifiedtableMapper.getModifiedTable();
+	}
+
+	public void modifyModifiedTable(ModifiedTable Modifiedtable) {
+		modifiedtableMapper.modifyModifiedTable(Modifiedtable);
+	}
+}

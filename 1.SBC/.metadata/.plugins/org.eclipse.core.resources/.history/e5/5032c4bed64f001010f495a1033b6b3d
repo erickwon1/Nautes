@@ -1,0 +1,12 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.Modifiedtable;
+
+@Mapper
+public interface ModifiedtableMapper {
+	public Modifiedtable getModifiedTable();
+
+	public void modifyMrwsConfig(Modifiedtable modifiedtable);
+}

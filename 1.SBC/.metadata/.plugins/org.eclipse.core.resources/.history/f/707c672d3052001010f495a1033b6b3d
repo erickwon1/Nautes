@@ -1,0 +1,140 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.ExRoute;
+import com.nautestech.www.model.Route;
+import com.nautestech.www.servicImpl.ExRouteService;
+import com.nautestech.www.servicImpl.RouteService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class RoutingTableController {
+
+	private final RouteService routeService;
+
+	private final ExRouteService exRouteService;
+
+	@RequestMapping(value = "/management/routingTable_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String routingTableAdd(Pageable pageable, @ModelAttribute Route route, Model model) {
+		Page<Route> routePage = routeService.getRoutes(route, pageable);
+		List<Route> routes = routePage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (routePage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < routePage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= routePage.getTotalPages()) {
+			if (routePage.getTotalPages() == 0) {
+				endBlockPage = routePage.getTotalPages();
+			} else {
+				endBlockPage = routePage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", routePage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", routePage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("routes", routes);
+		model.addAttribute("paging", paging);
+
+		return "/management/routingTable_add";
+	}
+
+	@PostMapping("/management/routingTable_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> routingTableAdd(@Valid @ModelAttribute Route route) {
+		routeService.setinsert(route);
+		routeService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/routingTable_add/delete")
+	@ResponseBody
+	public int deleteRoutes(@RequestBody Map<String, List<String>> requestData) {
+		List<String> rCnt = requestData.get("r_cnt");
+		List<Integer> rList = rCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = routeService.setdelete(rList);
+		routeService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/routingTable_add/modify")
+	@ResponseBody
+	public void modifyRoutes(@RequestBody Map<String, Object> requestData) {
+		List<String> rCnt = (List<String>) requestData.get("r_cnt");
+		List<Integer> rList = rCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		Integer r_type = requestData.get("r_type") != null ? Integer.parseInt(requestData.get("r_type").toString())
+				: null;
+
+		String r_src = requestData.get("r_src") != null ? requestData.get("r_src").toString() : null;
+		String r_method = requestData.get("r_method") != null ? requestData.get("r_method").toString() : null;
+		String r_rprnum = requestData.get("r_rprnum") != null ? requestData.get("r_rprnum").toString() : null;
+		String r_proxy_domain = requestData.get("r_proxy_domain") != null ? requestData.get("r_proxy_domain").toString()
+				: null;
+		String r_proxy_addr = requestData.get("r_proxy_addr") != null ? requestData.get("r_proxy_addr").toString()
+				: null;
+
+		Integer r_udpport = requestData.get("r_udpport") != null
+				? Integer.parseInt(requestData.get("r_udpport").toString())
+				: null;
+
+		String memo = requestData.get("memo") != null ? requestData.get("memo").toString() : null;
+
+		Route route = new Route();
+		route.setR_type(r_type);
+		route.setR_src(r_src);
+		route.setR_method(r_method);
+		route.setR_rprnum(r_rprnum);
+		route.setR_proxy_domain(r_proxy_domain);
+		route.setR_proxy_addr(r_proxy_addr);
+		route.setR_udpport(r_udpport);
+		route.setMemo(memo);
+
+		routeService.setupdate();
+		routeService.setmodify(rList, route);
+	}
+
+	@PostMapping("/management/ExRouteData")
+	@ResponseBody
+	public ExRoute ExRouteData(@RequestParam String exId) {
+		return exRouteService.FindByExId(exId);
+	}
+
+	@PostMapping("/management/saveExRoute")
+	@ResponseBody
+	public String saveExRoute(ExRoute exRoute) {
+		exRouteService.update();
+		if (exRoute.getEx_cnt() == null) {
+			exRouteService.insert(exRoute);
+		} else {
+			exRouteService.modify(exRoute);
+		}
+		return "SUCCESS";
+	}
+}

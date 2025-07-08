@@ -1,0 +1,23 @@
+package com.nautestech.www.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.nautestech.www.model.RegPhone;
+
+import utils.RequestList;
+
+@Mapper
+public interface RegPhoneMapper {
+	public List<RegPhone> getRegPhone(RequestList<?> requestList);
+
+	public int getRegPhoneCount(RequestList<?> requestList);
+
+	public void setinsert(RegPhone regPhone);
+
+	public void setmodify(@Param("rp_seq") List<Integer> rpList, @Param("regPhone") RegPhone regPhone);
+
+	public int setdelete(@Param("rp_seq") List<Integer> rpList);
+}

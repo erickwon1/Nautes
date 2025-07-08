@@ -1,0 +1,15 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class ModifiedtableService {
+	private final ModifiedtableMapper modifiedtableMapper;
+
+	public void modifyRoute2() {
+		modifiedtableMapper.modifyRoute2();
+	}
+}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>SBC</title>
+
+	<link rel="stylesheet" type="text/css" href="/resource/assets/css/reset.css">
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+
+	<link th:href="@{/resource/assets/css/bootstrap.min.css}" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script>
+		let pageSize = 50;
+		let isFetching = false; // 데이터 가져오기 여부
+
+		$(document).ready(function () {
+			// 처음 페이지 로드 시 데이터 가져오기
+			fetchData();
+
+			// 5초마다 데이터 가져오기
+			setInterval(function () {
+				fetchData();  // 현재 페이지 데이터를 가져옴
+			}, 5000);
+
+			// 새로고침 버튼 클릭 시 데이터 한 번 가져오기
+			$('#refreshBtn').click(function () {
+				fetchData();  // 현재 페이지 데이터를 다시 가져오기
+			});
+		});
+		function fetchData() {
+			if (isFetching) return; // 이미 데이터를 가져오는 중이면 중단
+
+			isFetching = true; // 데이터 가져오기를 시작
+			$.ajax({
+				url: "/management/regist_info",  // 세션 정보를 요청할 URL
+				method: "GET",
+				success: function (data) {
+					var tableBody = $("tbody");
+					tableBody.empty();
+					$(data).find("tbody tr").each(function () {
+						tableBody.append($(this));
+					});
+				},
+				error: function () {
+					console.log("데이터를 가져오는 데 실패했습니다.");
+				},
+				complete: function () {
+					isFetching = false; // 데이터 가져오기가 완료되면 상태 초기화
+				}
+			});
+		}
+	</script>
+
+</head>
+
+<body>
+	<nav class="navbar fixed-top">
+		<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+			aria-controls="offcanvasNavbar">
+			<i class="bi bi-list"></i>
+		</button>
+		<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
+			aria-labelledby="offcanvasNavbarLabel">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
+			</div>
+			<div class="d-flex align-items-center border-bottom mb-3">
+				<a class="nav-link" th:href="@{/management/sysConfig}">
+					<div class="d-flex align-items-center pt-3">
+						<h1 style="font-size: 1.6rem;">SBC</h1>
+					</div>
+				</a>
+			</div>
+
+			<div class="offcanvas-body">
+				<ul class="navbar-nav flex-column mb-3" id="navbarVerticalNav">
+					<li class="nav-item">
+						<ul class="nav" id="menu1">
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/sysConfig}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">System
+											Config
+											수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/mrwsConfig}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Mrws Config
+											수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/routingTable_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Routing
+											테이블 등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/proxyChkList_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">프록시 체크 리스트
+											등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/modifiedTable}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Modified
+											Table 수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item active">
+								<a class="nav-link" th:href="@{/management/regist_info}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Regist
+											정보</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/sessions_info}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">현재 세션
+											정보</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div class="w-100 d-grid mb-3">
+					<form id="logoutForm" action="/logout" method="post">
+						<button class="btn btn-secondary btn-fill w-100" type="submit">로그아웃</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<main class="main" id="top">
+		<div class="container ms-3" data-layout="container">
+			<div class="content">
+				<nav class="navbar navbar-light navbar-glass navbar-top navbar-expand">
+					<button class="btn navbar-toggler-humburger-icon navbar-toggler me-1 me-sm-3" type="button"
+						data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse"
+						aria-controls="navbarVerticalCollapse" aria-expanded="false"
+						aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span
+								class="toggle-line"></span></span></button>
+				</nav>
+				<h4 class="fw-bold py-2 mb-4">Regist 정보</h4>
+
+				<div class="row g-0 mb-4">
+					<div class="col-md-12 col-xxl-12">
+						<div class="card">
+							<input type="hidden" name="page" id="page">
+							<div class="card-body d-flex flex-wrap mt-3">
+								<div class="table-responsive text-nowrap w-100" style="max-height: 740px;">
+									<table class="table table-striped m-0 text-start table-hover">
+										<colgroup>
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th>User</th>
+												<th>From Host</th>
+												<th>From Ip</th>
+												<th>From Port</th>
+												<th>From Param</th>
+												<th>To Host</th>
+												<th>To Ip</th>
+												<th>To Port</th>
+												<th>To Param</th>
+												<th>Nat</th>
+												<th>Nat Ip</th>
+												<th>Nat Port</th>
+												<th>Nat port</th>
+												<th>From Field Host</th>
+												<th>To Field Host</th>
+												<th>From Proto</th>
+												<th>To Proto</th>
+												<th>From Id</th>
+												<th>To Id</th>
+												<th>Expire</th>
+											</tr>
+										</thead>
+										<tbody class="table-border-bottom-0">
+											<tr th:each="regist : ${regists}">
+												<td th:text="${regist.r_user}"></td>
+												<td th:text="${regist.r_fromHost}"></td>
+												<td th:text="${regist.r_fromIp}"></td>
+												<td th:text="${regist.r_fromPort}"></td>
+												<td th:text="${regist.r_fromParam}"></td>
+												<td th:text="${regist.r_toHost}"></td>
+												<td th:text="${regist.r_toIp}"></td>
+												<td th:text="${regist.r_toPort}"></td>
+												<td th:text="${regist.r_toParam}"></td>
+												<td th:text="${regist.r_nat}"></td>
+												<td th:text="${regist.r_natIp}"></td>
+												<td th:text="${regist.r_natport}"></td>
+												<td th:text="${regist.r_regtime}"></td>
+												<td th:text="${regist.r_fromFieldHost}"></td>
+												<td th:text="${regist.r_toFieldHost}"></td>
+												<td th:text="${regist.r_fromproto}"></td>
+												<td th:text="${regist.r_toproto}"></td>
+												<td th:text="${regist.r_fromid}"></td>
+												<td th:text="${regist.r_toid}"></td>
+												<td th:text="${regist.r_expire}"></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<nav aria-label=" Page navigation" class="w-100 mt-3 d-flex">
+									<button id="refreshBtn" class="btn btn-primary ms-3" style="z-index: 1000;">
+										새로고침
+									</button>
+								</nav>
+							</div>
+						</div>
+					</div>
+				</div>
+				<footer class="footer border-top mt-4">
+					<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+						<div class="col-12 col-sm-auto text-start">
+							<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+						</div>
+						<div class="col-12 col-sm-auto text-end">
+							<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</div>
+	</main>
+
+</body>
+
+</html>

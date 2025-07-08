@@ -1,0 +1,16 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.nautestech.www.model.ExRoute;
+
+@Mapper
+public interface ExRouteMapper {
+	public ExRoute FindByExId(String ex_Id);
+
+	public void setinsert(ExRoute exRoute);
+
+	public void setmodify(ExRoute exRoute);
+
+	public void setupdate();
+}

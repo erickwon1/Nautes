@@ -1,0 +1,114 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.ExRoute;
+import com.nautestech.www.servicImpl.ExRouteService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class ExRouteController {
+	private ExRouteService exRouteService;
+
+	@RequestMapping(value = "/management/exRoute_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String exRouteAdd(Pageable pageable, @ModelAttribute ExRoute exRoute, Model model) {
+		Page<ExRoute> exRoutePage = exRouteService.getExRoutes(exRoute, pageable);
+		List<ExRoute> exroutes = exRoutePage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (exRoutePage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < exRoutePage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= exRoutePage.getTotalPages()) {
+			if (exRoutePage.getTotalPages() == 0) {
+				endBlockPage = exRoutePage.getTotalPages();
+			} else {
+				endBlockPage = exRoutePage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", exRoutePage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", exRoutePage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("exroutes", exroutes);
+		model.addAttribute("paging", paging);
+
+		return "/management/exRoute_add";
+	}
+
+	@PostMapping("/management/exRoute_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> exRouteAdd(@Valid @ModelAttribute ExRoute exRoute) {
+		exRouteService.setinsert(exRoute);
+		exRouteService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/exRoute_add/delete")
+	@ResponseBody
+	public int deleteExRoutes(@RequestBody Map<String, List<String>> requestData) {
+		List<String> exCnt = requestData.get("ex_cnt");
+		List<Integer> exList = exCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = exRouteService.setdelete(exList);
+		exRouteService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/exRoute_add/modify")
+	@ResponseBody
+	public void modifyExRoutes(@RequestBody Map<String, Object> requestData) {
+		List<String> exCnt = (List<String>) requestData.get("ex_cnt");
+		List<Integer> exList = exCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		String ex_id = requestData.get("ex_id") != null ? requestData.get("ex_id").toString() : null;
+		String pri_domain = requestData.get("pri_domain") != null ? requestData.get("pri_domain").toString() : null;
+		String pri_addr = requestData.get("pri_addr") != null ? requestData.get("pri_addr").toString() : null;
+		String pri_priorty = requestData.get("pri_priorty") != null ? requestData.get("pri_priorty").toString() : null;
+		Integer pri_port = requestData.get("pri_port") != null
+				? Integer.parseInt(requestData.get("pri_port").toString())
+				: null;
+		String sec_domain = requestData.get("sec_domain") != null ? requestData.get("sec_domain").toString() : null;
+		String sec_addr = requestData.get("sec_addr") != null ? requestData.get("sec_addr").toString() : null;
+		String sec_priorty = requestData.get("sec_priorty") != null ? requestData.get("sec_priorty").toString() : null;
+		Integer sec_port = requestData.get("sec_port") != null
+				? Integer.parseInt(requestData.get("sec_port").toString())
+				: null;
+
+		ExRoute exRoute = new ExRoute();
+		exRoute.setEx_id(ex_id);
+		exRoute.setPri_domain(pri_domain);
+		exRoute.setPri_addr(pri_addr);
+		exRoute.setPri_priorty(pri_priorty);
+		exRoute.setPri_port(pri_port);
+		exRoute.setSec_domain(sec_domain);
+		exRoute.setSec_addr(sec_addr);
+		exRoute.setSec_priorty(sec_priorty);
+		exRoute.setSec_port(sec_port);
+
+		exRouteService.setupdate();
+		exRouteService.setmodifybyCnt(exList, exRoute);
+	}
+}

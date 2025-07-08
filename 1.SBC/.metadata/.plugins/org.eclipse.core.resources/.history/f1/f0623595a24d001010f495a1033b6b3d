@@ -1,0 +1,26 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.SysConfigMapper;
+import com.nautestech.www.model.SysConfig;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class SysConfigService implements delete {
+
+	private final SysConfigMapper sysConfigMapper;
+
+	public void setupdate() {
+		sysConfigMapper.updateSysConfig();
+	}
+
+	public void setmodify(List<Integer> rList, SysConfig sysConfig) {
+		sysConfigMapper.modifySysConfig(rList, sysConfig);
+	}
+}

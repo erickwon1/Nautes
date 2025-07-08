@@ -1,0 +1,10 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface ModifiedtableMapper {
+	public void modifiedtableMapper.modifyMRWS_CONFIG();
+
+	public void modifyRoute2();
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.MrwsConfigMapper">
+	<resultMap type="mrwsconfig" id="mrwsconfigMap">
+		<result property="sbc_id" column="sbc_id" />
+		<result property="sip_port" column="sip_port" />
+		<result property="use_protocol" column="use_protocol" />
+		<result property="media_trans_mod" column="media_trans_mod" />
+		<result property="always_nat" column="always_nat" />
+		<result property="sscs_port" column="sscs_port" />
+		<result property="mrms_addr" column="mrms_addr" />
+		<result property="mrms_port" column="mrms_port" />
+		<result property="mrws_port" column="mrws_port" />
+		<result property="ping_pong_count" column="ping_pong_count" />
+		<result property="re_regist_time" column="re_regist_time" />
+		<result property="expire_time" column="expire_time" />
+	</resultMap>
+	<select id="getMrwsConfig"
+		parameterType="com.nautestech.www.model.MrwsConfig"
+		resultMap="mrwsconfigMap">
+		SELECT * FROM MRWS_CONFIG
+	</select>
+	<update id="modifyMrwsConfig"> UPDATE MRWS_CONFIG SET sbc_id = #{sbc_id},
+		sip_port = #{sip_port}, use_protocol = #{use_protocol}, media_trans_mod
+		= #{media_trans_mod}, always_nat = #{always_nat}, sscs_port =
+		#{sscs_port}, mrms_addr = #{mrms_addr}, mrms_port = #{mrms_port},
+		mrws_port = #{mrws_port}, ping_pong_count = #{ping_pong_count},
+		re_regist_time = #{re_regist_time}, expire_time = #{expire_time}
+	</update>
+</mapper>

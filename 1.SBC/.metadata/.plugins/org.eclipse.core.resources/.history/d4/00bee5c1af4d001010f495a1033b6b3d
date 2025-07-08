@@ -1,0 +1,23 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.MrwsConfigMapper;
+import com.nautestech.www.model.SysConfig;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class MrwsConfigController {
+
+	private final MrwsConfigMapper mrwsConfigMapper;
+
+	public SysConfig getSysConfig() {
+		return mrwsConfigMapper.getMrwsConfig();
+	}
+
+	public void modifySysConfig(SysConfig sysConfig) {
+		mrwsConfigMapper.modifySysConfig(sysConfig);
+	}
+}

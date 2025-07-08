@@ -1,0 +1,47 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.RtpPoolsMapper;
+import com.nautestech.www.model.RtpPools;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class RtpPoolsService implements delete {
+	RtpPoolsMapper rtpPoolsMapper;
+
+	public void setinsert(RtpPools rtpPools) {
+		rtpPoolsMapper.setinsert(rtpPools);
+	}
+
+	public void setmodify(List<Integer> rList, RtpPools rtpPools) {
+		rtpPoolsMapper.setmodify(rList, rtpPools);
+	}
+
+	public void setupdate() {
+		rtpPoolsMapper.setupdate();
+	}
+
+	public Page<RtpPools> getRtpPools(RtpPools rtpPools, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(rtpPools).pageable(pageable).build();
+
+		List<RtpPools> content = rtpPoolsMapper.getRtpPools(requestList);
+		int total = rtpPoolsMapper.getRtpPoolsCount(requestList);
+
+		return new PageImpl<RtpPools>(content, pageable, total);
+	}
+
+	@Override
+	public int setdelete(List<Integer> rList) {
+		return rtpPoolsMapper.setdelete(rList);
+	}
+}

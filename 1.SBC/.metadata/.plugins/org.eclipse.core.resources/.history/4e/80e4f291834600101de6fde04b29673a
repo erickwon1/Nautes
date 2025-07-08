@@ -1,0 +1,121 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.CurrentSessionInfo;
+import com.nautestech.www.model.ExRoute;
+import com.nautestech.www.model.Route;
+import com.nautestech.www.servicImpl.CurrentSessionInfoService;
+import com.nautestech.www.servicImpl.ExRouteService;
+import com.nautestech.www.servicImpl.RouteService;
+import com.nautestech.www.validator.RouteValidator;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class ManagementController {
+
+	private final CurrentSessionInfoService currentSessionInfoService;
+
+	private final RouteService routeService;
+
+	private final RouteValidator routeValidator;
+
+	private final ExRouteService exRouteService;
+
+	@GetMapping("/management/sessions_info")
+	public String sessionsInfo(Model model) {
+		List<CurrentSessionInfo> sessions = currentSessionInfoService.getSessions();
+
+		model.addAttribute("sessions", sessions);
+
+		return "/management/sessions_info";
+	}
+
+	@RequestMapping(value = "/management/routingTable_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String routingTableAdd(Pageable pageable, @ModelAttribute Route route, Model model) {
+		Page<Route> routePage = routeService.getRoutes(route, pageable);
+		List<Route> routes = routePage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (routePage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < routePage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= routePage.getTotalPages()) {
+			if (routePage.getTotalPages() == 0) {
+				endBlockPage = routePage.getTotalPages();
+			} else {
+				endBlockPage = routePage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", routePage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", routePage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("routes", routes);
+		model.addAttribute("paging", paging);
+
+		routeService.setupdate();
+
+		return "/management/routingTable_add";
+	}
+
+	@PostMapping("/management/routingTable_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> routingTableAdd(@Valid @ModelAttribute Route route, BindingResult bindingResult)
+			throws Exception {
+		routeValidator.validate(route, bindingResult);
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = new HashMap<>();
+			for (FieldError error : bindingResult.getFieldErrors()) {
+				errors.put(error.getField(), error.getDefaultMessage());
+			}
+			return ResponseEntity.badRequest().body(errors);
+		}
+
+		routeService.insertRoutes(route);
+		routeService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/routingTable_add/delete")
+	@ResponseBody
+	public int deleteRoutes(@RequestBody Map<String, List<String>> requestData) {
+		List<String> rCnt = requestData.get("r_cnt");
+		List<Integer> rList = rCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = routeService.setdelete(rList);
+		routeService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/loadExRouteData")
+	public void loadExRouteData(@RequestParam String login_id, Model model) {
+		ExRoute exRoute = exRouteService.FindByExId(null)
+	}
+}

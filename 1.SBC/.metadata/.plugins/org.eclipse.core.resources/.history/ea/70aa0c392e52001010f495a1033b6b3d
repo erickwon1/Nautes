@@ -1,0 +1,13 @@
+package com.nautestech.www.controller;
+
+import org.springframework.stereotype.Controller;
+
+import com.nautestech.www.servicImpl.ExRouteService;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class ExRouteController {
+	private ExRouteService exRouteService;
+}

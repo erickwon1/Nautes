@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>SBC</title>
+
+	<link rel="stylesheet" type="text/css" href="/resource/assets/css/reset.css">
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+
+	<link th:href="@{/resource/assets/css/bootstrap.min.css}" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('#r_type, #r_src, #r_method, #r_rprnum, #r_proxy_domain, #r_proxy_addr, #r_udpport').on('keypress', function (key) {
+				if (key.keyCode == 13) {
+					resetPage();
+					$("#searchFrm").submit();
+				}
+			});
+
+			$('#selectAll').on('change', function () {
+				$('.rowCheckbox').prop('checked', this.checked);
+			});
+
+			$(document).on("click", ".proxy-clickable", function () {
+				const exId = $(this).data("ex-id");
+				if (!exId) {
+					alert("ex_id가 존재하지 않습니다.");
+					return;
+				}
+
+				loadExRouteData(exId);
+			});
+
+			$("#searchButton").click(function () {
+				resetPage();
+				$("#searchFrm").submit();
+			});
+
+			$("#insertButton").click(function () {
+				if (confirm("추가하시겠습니까?")) {
+					insertData().then(() => {  // 추가 완료 후 실행
+						clearInputFields();
+						$('#searchButton').trigger("click");
+					}).catch(error => {
+						console.error("추가 중 오류 발생:", error);
+					});
+				}
+			});
+
+			$("#deleteButton").click(function () {
+				deleteData().then(() => {  // 삭제 완료 후 실행
+					clearInputFields();
+					$('#searchButton').trigger("click");
+				}).catch(error => {
+					console.error("삭제 중 오류 발생:", error);
+				});
+			});
+
+			$("#modifyButton").click(function () {
+				modifyData().then(() => {  // 삭제 완료 후 실행
+					$('#searchButton').trigger("click");
+				}).catch(error => {
+					console.error("수정 중 오류 발생:", error);
+				});
+			});
+
+			$("#saveExRouteBtn").click(function () {
+				saveExRoute();
+			});
+		});
+		function clearInputFields() {
+			resetPage();
+			$("#r_type").val("0");
+			$("#r_src").val("");
+			$("#r_method").val("ALL");
+			$("#r_rprnum").val("");
+			$("#r_proxy_domain").val("");
+			$("#r_proxy_addr").val("");
+			$("#r_udpport").val("");
+		}
+
+		function resetPage() {
+			$('#page').val("0");
+		}
+
+		function insertData() {
+			return new Promise((resolve, reject) => {
+				$.ajax({
+					url: "/management/routingTable_add/insert",
+					type: "POST",
+					processData: false,
+					data: $("#searchFrm").serialize(),
+					success: function (data) {
+						if (data === "OK") {
+							alert("성공적으로 데이터를 추가했습니다.");
+							resolve();
+						}
+					},
+					error: function (xhr) {
+						if (xhr.status === 400) {
+							let errors = xhr.responseJSON;
+							$(".text-danger").remove();  // 기존 오류 메시지 제거
+							Object.keys(errors).forEach(key => {
+								let errorMessage = `<div class="text-danger">${errors[key]}</div>`;
+								$(`*[name="` + key + `"]`).after(errorMessage);  // 입력 필드 아래에 에러 메시지 추가
+							});
+						} else {
+							alert("서버 오류가 발생했습니다.");
+						}
+						reject();
+					}
+				});
+			});
+		}
+
+		function deleteData() {
+			// 체크된 체크박스들의 값을 배열로 가져오기
+			var selectedValues = $("input[name='r_cnt']:checked").map(function () {
+				return $(this).val();
+			}).get();
+
+			// 값이 없으면 경고 후 종료
+			if (selectedValues.length === 0) {
+				alert("삭제할 항목을 선택하세요.");
+				return;
+			}
+
+			return new Promise((resolve, reject) => {
+				$.ajax({
+					url: "/management/routingTable_add/delete",
+					type: "POST",
+					contentType: "application/json",
+					data: JSON.stringify({
+						r_cnt: selectedValues
+					}),
+					success: function (data) {
+						alert("성공적으로 " + data + "개의 데이터를 삭제했습니다.");
+						resolve();
+					},
+					error: function () {
+						alert("삭제를 실패했습니다.");
+						reject(error);
+					}
+				});
+			});
+		}
+
+		function modifyData() {
+			var selectedValues = $("input[name='r_cnt']:checked").map(function () {
+				return $(this).val();
+			}).get();
+			if (selectedValues.length === 0) {
+				alert("수정할 항목을 선택하세요.");
+				return;
+			}
+			if (!confirm(`${selectedValues.length}개의 routing table을 수정하시겠습니까?`)) {
+				return;
+			}
+
+			const data = {
+				r_cnt: selectedValues,
+				r_type: $('#r_type').val(),
+				r_src: $('#r_src').val(),
+				r_method: $('#r_method').val(),
+				r_rprnum: $('#r_rprnum').val(),
+				r_proxy_domain: $('#r_proxy_domain').val(),
+				r_proxy_addr: $('#r_proxy_addr').val(),
+				r_udpport: $('#r_udpport').val()
+			};
+
+			$.ajax({
+				url: '/management/routingTable_add/modify',
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(data),
+				success: function (res) {
+					alert(`성공적으로 수정되었습니다.`);
+					location.reload();
+				},
+				error: function (xhr, status, error) {
+					alert('수정 중 오류가 발생했습니다.');
+					console.error(error);
+				}
+			});
+		}
+
+		function loadExRouteData(exId) {
+			$.ajax({
+				type: "POST",
+				url: "/management/ExRouteData",
+				data: {exId: exId},
+				success: function (data) {
+					$("#ex_id").val(data.ex_id || exId);
+					$("#pri_domain").val(data.pri_domain || "");
+					$("#pri_addr").val(data.pri_addr || "");
+					$("#pri_priorty").val(data.pri_priorty || "");
+					$("#pri_port").val(data.pri_port || "");
+					$("#sec_domain").val(data.sec_domain || "");
+					$("#sec_addr").val(data.sec_addr || "");
+					$("#sec_priorty").val(data.sec_priorty || "");
+					$("#sec_port").val(data.sec_port || "");
+					$("#ex_cnt").val(data.ex_cnt || "");
+
+					$("#exRouteModal").modal("show");
+				},
+				error: function () {
+					alert("exRoute 데이터를 불러오는 데 실패했습니다.");
+				}
+			});
+		}
+
+		function saveExRoute() {
+			$.ajax({
+				url: "/management/saveExRoute",
+				type: "POST",
+				data: $("#exRouteForm").serialize(),
+				success: function (res) {
+					if (res === "SUCCESS") {
+						alert("저장되었습니다.");
+						$("#exRouteModal").modal("hide");
+					} else {
+						alert("저장 실패");
+					}
+				},
+				error: function () {
+					alert("서버 오류");
+				}
+			});
+		}
+
+		function change_page(page) {
+			$('#page').val(page);
+			$("#searchFrm").submit();
+			$('.dynamic-page').removeClass('active');
+			$(".dynamic-page").eq(page).addClass('active');
+		}
+
+		function updatePagination(data) {
+			var pagination = $(".pagination");
+			pagination.empty();
+			$(data).find(".pagination").each(function () {
+				pagination.append($(this));
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const r_src = document.getElementById("r_src");
+			const r_rprnum = document.getElementById("r_rprnum");
+			const r_udpport = document.getElementById("r_udpport");
+
+			r_src.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 4);
+			});
+
+			r_rprnum.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 11);
+			});
+
+			r_udpport.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 4);
+			});
+
+			const rows = document.querySelectorAll(".route-row");
+
+			rows.forEach(row => {
+				row.addEventListener("click", function () {
+					const cells = row.querySelectorAll("td");
+					const r_type = cells[1].textContent.trim();
+					const r_src = cells[2].textContent.trim();
+					const r_method = cells[3].textContent.trim();
+					const r_rprnum = cells[4].textContent.trim();
+					const r_proxy_domain = cells[5].textContent.trim();
+					const r_proxy_addr = cells[6].textContent.trim();
+					const r_udpport = cells[7].textContent.trim();
+					console.log("udpport:", r_udpport);
+					document.querySelector("#r_type").value = r_type;
+					document.querySelector("#r_src").value = r_src;
+					document.querySelector("#r_method").value = r_method;
+					document.querySelector("#r_rprnum").value = r_rprnum;
+					document.querySelector("#r_proxy_domain").value = r_proxy_domain;
+					document.querySelector("#r_proxy_addr").value = r_proxy_addr;
+					document.querySelector("#r_udpport").value = r_udpport;
+				});
+			});
+			document.getElementById("helpButton").addEventListener("click", function () {
+				let helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
+				helpModal.show();
+			});
+		});
+	</script>
+
+</head>
+
+<body>
+	<nav class="navbar fixed-top">
+		<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+			aria-controls="offcanvasNavbar">
+			<i class="bi bi-list"></i>
+		</button>
+		<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
+			aria-labelledby="offcanvasNavbarLabel">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="d-flex align-items-center border-bottom mb-3">
+				<a class="nav-link" th:href="@{/management/routingTable_add}">
+					<div class="d-flex align-items-center pt-3">
+						<h1 style="font-size: 1.6rem;">SBC</h1>
+					</div>
+				</a>
+			</div>
+			<div class="offcanvas-body">
+				<ul class="navbar-nav flex-column mb-3" id="navbarVerticalNav">
+					<li class="nav-item">
+						<ul class="nav" id="menu1">
+							<li class="nav-item active">
+								<a class="nav-link" th:href="@{/management/routingTable_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Routing 테이블
+											등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/sessions_info}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">현재 세션
+											정보</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div class="w-100 d-grid mb-3">
+					<form id="logoutForm" action="/logout" method="post">
+						<button class="btn btn-secondary btn-fill w-100" type="submit">로그아웃</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<main class="main" id="top">
+		<div class="container ms-3" data-layout="container">
+			<div class="content">
+				<nav class="navbar navbar-light navbar-glass navbar-top navbar-expand">
+					<button class="btn navbar-toggler-humburger-icon navbar-toggler me-1 me-sm-3" type="button"
+						data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse"
+						aria-controls="navbarVerticalCollapse" aria-expanded="false"
+						aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span
+								class="toggle-line"></span></span></button>
+				</nav>
+				<h4 class="fw-bold py-2 mb-4">Routing 테이블 등록</h4>
+				<div class="row g-0 mb-4">
+					<div class="col-md-12 col-xxl-12">
+						<div class="card">
+							<div class="card-body d-flex flex-wrap mt-3">
+								<form id="searchFrm" class="d-flex w-100 flex-wrap"
+									th:action="@{/management/routingTable_add}" method="post" th:object="${route}">
+									<input type="hidden" name="page" id="page">
+									<div class="form-group d-flex w-100 flex-wrap search-wrap">
+										<div class="d-flex w-100 flex-wrap">
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="routing_type_select" class="form-label">Routing type</label>
+												<span class="text-danger">*</span>
+												<button type="button" class="btn btn-sm btn-light border-0 p-0 "
+													data-bs-toggle="modal" data-bs-target="#helpModal"
+													style="font-size:1rem"><i
+														class="bi bi-question-circle text-primary"></i>
+												</button>
+												<div class="d-flex justify-content-center align-items-center">
+													<select class="form-select" id='r_type' name='r_type'>
+														<option value="-1" th:selected="*{r_type=='-1'}">Routing type 선택
+														</option>
+														<option value="0" th:selected="*{r_type==0}">0. proxy (등록)
+														</option>
+														<option value="1" th:selected="*{r_type==1}">1. IP (ip → proxy)
+														</option>
+														<option value="2" th:selected="*{r_type==2}">2. Proxy(proxy →
+															ip)
+														</option>
+														<option value="3" th:selected="*{r_type==3}">3. Regi (SBCregi)
+														</option>
+														<option value="4" th:selected="*{r_type==4}">4. Prefix</option>
+													</select>
+												</div>
+											</div>
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="routing_src_input" class="form-label">Routing src</label>
+												<span class="text-danger">*</span>
+												<input type="text" class="form-control" placeholder="Routing src 입력"
+													id='r_src' name='r_src' th:value="*{r_src}">
+											</div>
+										</div>
+										<div class="d-flex w-100 flex-wrap">
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="method_select" class="form-label">Method</label>
+												<span class="text-danger">*</span>
+												<div class="d-flex justify-content-center align-items-center">
+													<select class="form-select" id='r_method' name='r_method'>
+														<option value="" th:selected="*{r_method==''}">Method 선택
+														</option>
+														<option value="ALL" th:selected="*{r_method=='ALL'}">ALL
+														</option>
+														<option value="Invite" th:selected="*{r_method=='Invite'}">
+															Invite
+														</option>
+														<option value="Select" th:selected="*{r_method=='Select'}">
+															Select
+														</option>
+													</select>
+												</div>
+											</div>
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="representative_num" class="form-label">대표번호</label>
+												<input type="text" class="form-control" id='r_rprnum' name='r_rprnum'
+													th:value="*{r_rprnum}" placeholder="대표번호 입력">
+											</div>
+										</div>
+										<div class="d-flex w-100 flex-wrap">
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="proxy_domain_input" class="form-label">proxy_domain</label>
+												<span class="text-danger">*</span>
+												<input type="text" class="form-control" id='r_proxy_domain'
+													name='r_proxy_domain' th:value="*{r_proxy_domain}"
+													placeholder="proxy_domain 입력">
+											</div>
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="proxy_addr_input" class="form-label">proxy_addr</label>
+												<span class="text-danger">*</span>
+												<input type="text" class="form-control" id='r_proxy_addr'
+													name='r_proxy_addr' th:value="*{r_proxy_addr}"
+													placeholder="proxy_addr 입력">
+											</div>
+											<div class="col-lg-4 pe-3 col-12 px-2 mb-3">
+												<label for="udp_port_input" class="form-label">UDP port</label>
+												<input type="text" class="form-control" id='r_udpport' name='r_udpport'
+													th:value="*{r_udpport}" placeholder="UDP port 입력">
+											</div>
+										</div>
+									</div>
+									<div class="col-12 d-flex mt-3 flex-wrap">
+										<button id="searchButton" class="btn btn-primary round-fill px-4 ms-auto"
+											type="button">검색</button>
+										<button id="insertButton" class="btn btn btn-primary round-fill px-4 ms-2"
+											type="button" name="insertButton">추가</button>
+										<button id="modifyButton"
+											class="btn btn btn-outline-primary round-fill px-4 ms-2" type="button"
+											name="modifyButton">수정</button>
+										<button id="deleteButton"
+											class="btn btn btn-outline-primary round-fill px-4 ms-2 me-auto"
+											type="button">선택 삭제</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row g-0 mb-4">
+					<div class="col-md-12 col-xxl-12">
+						<div class="card">
+							<div class="card-body d-flex flex-wrap mt-3">
+								<div class="table-responsive text-nowrap w-100" style="max-height: 740px;">
+									<table class="table table-striped m-0 text-start table-hover">
+										<colgroup>
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="10%" />
+											<col width="10%" />
+											<col width="10%" />
+											<col width="5%" />
+											<col width="45%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th><input class="form-check-input ms-0" type="checkbox"
+														id="selectAll">선택</th>
+												<th>type</th>
+												<th>src</th>
+												<th>method</th>
+												<th>대표번호</th>
+												<th>proxy_domain</th>
+												<th>proxy_addr</th>
+												<th>udpport</th>
+												<th>inform</th>
+											</tr>
+										</thead>
+										<tbody class="table-border-bottom-0">
+											<tr th:each="route : ${routes}" class="route-row">
+												<td><input class="form-check-input ms-0 rowCheckbox" type="checkbox"
+														th:value="${route.r_cnt}" id="r_cnt" name="r_cnt"></td>
+												<td th:text="${route.r_type}"></td>
+												<td th:text="${route.r_src}"></td>
+												<td th:text="${route.r_method}"></td>
+												<td th:text="${route.r_rprnum}"></td>
+												<td th:text="${route.r_proxy_domain}"></td>
+												<td>
+													<span class="proxy-clickable text-primary" style="cursor:pointer;"
+														th:text="${route.r_proxy_addr}"
+														th:data-ex-id="${route.r_proxy_addr}">
+													</span>
+												</td>
+												<td th:text="${route.r_udpport}"></td>
+												<td th:text="${route.r_rprnum}"></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<nav aria-label="Page navigation" class="w-100 mt-3 d-flex">
+									<ul class="pagination mb-0 mx-auto">
+										<li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled':''">
+											<a class="page-link"
+												th:onclick="change_page([[${paging.startBlockPage-paging.pageBlock}]])"
+												aria-label="Previous">
+												<span aria-hidden="true">&laquo;</span>
+											</a>
+										</li>
+										<li th:each="page : ${#numbers.sequence(paging.startBlockPage, paging.endBlockPage)}"
+											th:classappend="${page == paging.number} ? 'active' : ''"
+											class="page-item dynamic-page">
+											<a th:text="${page+1}" class="page-link"
+												th:onclick="change_page([[${page}]])"></a>
+										</li>
+										<li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled':''">
+											<a class="page-link" th:onclick="change_page([[${paging.endBlockPage+1}]])"
+												aria-label="Next">
+												<span aria-hidden="true">&raquo;</span>
+											</a>
+										</li>
+									</ul>
+								</nav>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="exRouteModal" tabindex="-1" aria-labelledby="exRouteModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<form id="exRouteForm">
+								<div class="modal-header">
+									<h5 class="modal-title" id="exRouteModalLabel">EX_ROUTE 정보</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+								</div>
+								<div class="modal-body">
+									<div class="row">
+										<div class="col-md-6 mb-3">
+											<label for="ex_id">ex_id</label>
+											<input type="text" id="ex_id" name="ex_id" class="form-control" readonly>
+										</div>
+										<div class="col-md-6 mb-3"></div>
+										<div class="col-md-6">
+											<div class="mb-3">
+												<label for="pri_domain">pri_domain</label>
+												<input type="text" id="pri_domain" name="pri_domain"
+													class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="pri_addr">pri_addr</label>
+												<input type="text" id="pri_addr" name="pri_addr" class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="pri_priorty">pri_priorty</label>
+												<select class="form-select" id='pri_priorty' name='pri_priorty'>
+													<option value="M" th:selected="*{pri_priorty=='M'}">ALL
+													</option>
+													<option value="S" th:selected="*{pri_priorty=='S'}">
+														Invite
+													</option>
+												</select>
+											</div>
+											<div class="mb-3">
+												<label for="pri_port">pri_port</label>
+												<input type="text" id="pri_port" name="pri_port" class="form-control">
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="mb-3">
+												<label for="sec_domain">sec_domain</label>
+												<input type="text" id="sec_domain" name="sec_domain"
+													class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="sec_addr">sec_addr</label>
+												<input type="text" id="sec_addr" name="sec_addr" class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="sec_priorty">sec_priorty</label>
+												<input type="text" id="sec_priorty" name="sec_priorty"
+													class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="sec_port">sec_port</label>
+												<input type="text" id="sec_port" name="sec_port" class="form-control">
+											</div>
+										</div>
+										<input type="hidden" id="ex_cnt" name="ex_cnt">
+									</div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-primary" id="saveExRouteBtn">저장</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="helpModalLabel">Routing Type 설명</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal"
+									aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<p><strong>Routing Type</strong>은 호출을 특정 서버로 라우팅하는 방법을 결정합니다.</p>
+								<ul>
+									<li><strong>1 → ROUTE_TYPE_IP</strong>: 해당 IP에서 오는 콜을 프락시 서버로 블라인드 라우팅.</li>
+									<li><strong>3 → ROUTE_TYPE_LOCAL</strong>: 로컬 시스템에서 특정 서버로 메시지를 라우팅 (SBC가 특정 번호로
+										등록할
+										때 사용).</li>
+									<li><strong>4 → ROUTE_TYPE_PREFIX</strong>: 프리픽스를 기준으로 라우팅.
+										<ul>
+											<li>[TO][FROM][TO에서 제거할 자리수]</li>
+											<li><code>[9][0][1]</code>: TO가 9로 시작하는 번호 중 9를 제거 후 라우팅.<br>예:
+												<code>901012345678 → 01012345678</code>
+											</li>
+											<li><code>[9][0707815][1]</code>: To가 9로 시작하고 From이 0707815일 경우, 9를 제거 후
+												라우팅.<br>예: <code>901012345678 → 01012345678</code></li>
+										</ul>
+									</li>
+									<li><strong>2 → ROUTE_TYPE_PROXY</strong>: 특정 프락시에서 오는 콜을 특정 서버로 라우팅 (TYPE 1과
+										유사하지만
+										우선순위가 PREFIX보다 낮음).</li>
+									<li><strong>0 → ROUTE_TYPE_PROXY (SBC)</strong>: SBC에서 연결되는 Proxy 장비 추가 필요.</li>
+								</ul>
+								<p><strong>우선순위</strong>: 1 → 3 → 4 → 2 → 0</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<footer class="footer border-top mt-4">
+					<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+						<div class="col-12 col-sm-auto text-start">
+							<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+						</div>
+						<div class="col-12 col-sm-auto text-end">
+							<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</div>
+	</main>
+</body>
+
+</html>

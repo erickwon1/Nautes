@@ -1,0 +1,26 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.ExRouteMapper;
+import com.nautestech.www.model.ExRoute;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class ExRouteService {
+	ExRouteMapper exRouteMapper;
+
+	public ExRoute FindByExId(String ex_id) {
+		return exRouteMapper.FindByExId(ex_id);
+	}
+
+	public void insert(ExRoute exRoute) {
+		exRouteMapper.insert(exRoute);
+	}
+
+	public void update(ExRoute exRoute) {
+		exRouteMapper.update(exRoute);
+	}
+}

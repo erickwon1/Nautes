@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>SBC</title>
+
+	<link rel="stylesheet" type="text/css" href="/resource/assets/css/reset.css">
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/reset.css}">
+
+	<link th:href="@{/resource/assets/css/bootstrap.min.css}" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/resource/assets/css/animate.min.css}">
+
+	<script th:src="@{/resource/assets/js/jquery-2.1.1.js}"></script>
+	<script th:src="@{/resource/assets/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/resource/assets/js/all.min.js}"></script>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/style.css}">
+	<link rel="stylesheet" type="text/css" th:href="@{/resource/assets/css/login_style.css}">
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			let targetButtonId = null;
+			const saveBtn = document.getElementById('saveExRouteBtn');
+			$('#ex_id, #pri_domain, #pri_addr, #pri_priorty, #pri_port, #sec_domain, #sec_addr,  #sec_priorty, #sec_port').on('keypress', function (key) {
+				if (key.keyCode == 13) {
+					resetPage();
+					$("#saveExRouteBtn").click();
+				}
+			});
+
+			$('#selectAll').on('change', function () {
+				$('.rowCheckbox').prop('checked', this.checked);
+			});
+
+			$("#searchButton").click(function () {
+				resetPage();
+				$("#searchFrm").submit();
+			});
+
+			$("#insertButton").click(function () {
+				if (confirm("추가하시겠습니까?")) {
+					insertData().then(() => {  // 추가 완료 후 실행
+						clearInputFields();
+						$('#searchButton').trigger("click");
+					}).catch(error => {
+						console.error("추가 중 오류 발생:", error);
+					});
+				}
+			});
+
+			$("#deleteButton").click(function () {
+				deleteData().then(() => {  // 삭제 완료 후 실행
+					clearInputFields();
+					$('#searchButton').trigger("click");
+				}).catch(error => {
+					console.error("삭제 중 오류 발생:", error);
+				});
+			});
+
+			$("#modifyButton").click(function () {
+				modifyData().then(() => {  // 수정 완료 후 실행
+					$('#searchButton').trigger("click");
+				}).catch(error => {
+					console.error("수정 중 오류 발생:", error);
+				});
+			});
+
+			document.getElementById('searchModalButton').addEventListener('click', () => {
+				targetButtonId = 'searchButton';
+				saveBtn.textContent = '검색';
+			});
+
+			document.getElementById('insertModalButton').addEventListener('click', () => {
+				targetButtonId = 'insertButton';
+				saveBtn.textContent = '추가';
+			});
+
+			document.getElementById('modifyModalButton').addEventListener('click', () => {
+				targetButtonId = 'modifyButton';
+				saveBtn.textContent = '수정';
+			});
+
+			$('#saveRouteBtn').on('click', function () {
+				const exRouteModal = bootstrap.Modal.getInstance(document.getElementById('ExRouteModal'));
+				exRouteModal.hide();
+				if (targetButtonId) {
+					$('#' + targetButtonId).trigger('click');
+				}
+				targetButtonId = null;
+			});
+		});
+
+		function clearInputFields() {
+			resetPage();
+			$("#ex_id").val("");
+			$("#pri_domain").val("");
+			$("#pri_addr").val("");
+			$("#pri_priorty").val("");
+			$("#pri_port").val("");
+			$("#sec_domain").val("");
+			$("#sec_addr").val("");
+			$("#sec_priorty").val("");
+			$("#sec_port").val("");
+		}
+
+		function resetPage() {
+			$('#page').val("0");
+		}
+
+		function insertData() {
+			return new Promise((resolve, reject) => {
+				$.ajax({
+					url: "/management/exRoute_add/insert",
+					type: "POST",
+					processData: false,
+					data: $("#searchFrm").serialize(),
+					success: function (data) {
+						if (data === "OK") {
+							alert("성공적으로 데이터를 추가했습니다.");
+							resolve();
+						}
+					},
+					error: function (xhr) {
+						alert("서버 오류가 발생했습니다.");
+						reject();
+					}
+				});
+			});
+		}
+
+		function deleteData() {
+			// 체크된 체크박스들의 값을 배열로 가져오기
+			var selectedValues = $("input[name='ex_cnt']:checked").map(function () {
+				return $(this).val();
+			}).get();
+
+			// 값이 없으면 경고 후 종료
+			if (selectedValues.length === 0) {
+				alert("삭제할 항목을 선택하세요.");
+				return;
+			}
+
+			return new Promise((resolve, reject) => {
+				$.ajax({
+					url: "/management/exRoute_add/delete",
+					type: "POST",
+					contentType: "application/json",
+					data: JSON.stringify({
+						ex_cnt: selectedValues
+					}),
+					success: function (data) {
+						alert("성공적으로 " + data + "개의 데이터를 삭제했습니다.");
+						resolve();
+					},
+					error: function () {
+						alert("삭제를 실패했습니다.");
+						reject(error);
+					}
+				});
+			});
+		}
+
+		function modifyData() {
+			var selectedValues = $("input[name='ex_cnt']:checked").map(function () {
+				return $(this).val();
+			}).get();
+			if (selectedValues.length === 0) {
+				alert("수정할 항목을 선택하세요.");
+				return;
+			}
+			if (!confirm(`${selectedValues.length}개의 ex route를 수정하시겠습니까?`)) {
+				return;
+			}
+
+			const data = {
+				ex_cnt: selectedValues,
+				ex_id: $('#ex_id').val(),
+				pri_domain: $('#pri_domain').val(),
+				pri_addr: $('#pri_addr').val(),
+				pri_priorty: $('#pri_priorty').val(),
+				pri_port: $('#pri_port').val(),
+				sec_domain: $('#sec_domain').val(),
+				sec_addr: $('#sec_addr').val(),
+				sec_priorty: $('#sec_priorty').val(),
+				sec_port: $('#sec_port').val()
+			};
+
+			$.ajax({
+				url: '/management/exRoute_add/modify',
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(data),
+				success: function (res) {
+					alert(`성공적으로 수정되었습니다.`);
+					location.reload();
+				},
+				error: function (xhr, status, error) {
+					alert('수정 중 오류가 발생했습니다.');
+					console.error(error);
+				}
+			});
+		}
+
+		function change_page(page) {
+			$('#page').val(page);
+			$("#searchFrm").submit();
+			$('.dynamic-page').removeClass('active');
+			$(".dynamic-page").eq(page).addClass('active');
+		}
+
+		function updatePagination(data) {
+			var pagination = $(".pagination");
+			pagination.empty();
+			$(data).find(".pagination").each(function () {
+				pagination.append($(this));
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const pri_domain = document.getElementById("pri_domain");
+			const sec_domain = document.getElementById("sec_domain");
+			const pri_addr = document.getElementById("pri_addr");
+			const sec_addr = document.getElementById("sec_addr");
+			const pri_port = document.getElementById("pri_port");
+			const sec_port = document.getElementById("sec_port");
+
+			pri_domain.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9.]/g, "").slice(0, 15);
+			});
+
+			sec_domain.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9.]/g, "").slice(0, 15);
+			});
+
+			pri_addr.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9.]/g, "").slice(0, 15);
+			});
+
+			sec_addr.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9.]/g, "").slice(0, 15);
+			});
+
+			pri_port.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 4);
+			});
+
+			sec_port.addEventListener("input", function () {
+				this.value = this.value.replace(/[^0-9]/g, "").slice(0, 4);
+			});
+
+			const rows = document.querySelectorAll(".route-row");
+
+			rows.forEach(row => {
+				row.addEventListener("click", function () {
+					const cells = row.querySelectorAll("td");
+					const ex_id = cells[1].textContent.trim();
+					const pri_domain = cells[2].textContent.trim();
+					const pri_addr = cells[3].textContent.trim();
+					const pri_priorty = cells[4].textContent.trim();
+					const pri_port = cells[5].textContent.trim();
+					const sec_domain = cells[6].textContent.trim();
+					const sec_addr = cells[7].textContent.trim();
+					const sec_priorty = cells[8].textContent.trim();
+					const sec_port = cells[8].textContent.trim();
+					$("#ex_id").val(ex_id);
+					$("#pri_domain").val(pri_domain);
+					$("#pri_addr").val(pri_addr);
+					$("#pri_priorty").val(pri_priorty);
+					$("#pri_port").val(pri_port);
+					$("#sec_domain").val(sec_domain);
+					$("#sec_addr").val(sec_addr);
+					$("#sec_priorty").val(sec_priorty);
+					$("#sec_port").val(sec_port);
+				});
+			});
+		});
+	</script>
+
+</head>
+
+<body>
+	<nav class="navbar fixed-top">
+		<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+			aria-controls="offcanvasNavbar">
+			<i class="bi bi-list"></i>
+		</button>
+		<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
+			aria-labelledby="offcanvasNavbarLabel">
+			<div class="offcanvas-header">
+				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="d-flex align-items-center border-bottom mb-3">
+				<a class="nav-link" th:href="@{/management/sysConfig}">
+					<div class="d-flex align-items-center pt-3">
+						<h1 style="font-size: 1.6rem;">SBC</h1>
+					</div>
+				</a>
+			</div>
+			<div class="offcanvas-body">
+				<ul class="navbar-nav flex-column mb-3" id="navbarVerticalNav">
+					<li class="nav-item">
+						<ul class="nav" id="menu1">
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/sysConfig}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">System
+											Config
+											수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/mrwsConfig}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Mrws Config
+											수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/routingTable_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Routing 테이블
+											등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item active">
+								<a class="nav-link" th:href="@{/management/exRoute_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Ex Route
+											등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/proxyChkList_add}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">프록시 체크 리스트
+											등록</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/modifiedTable}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Modified
+											Table 수정</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/regist_info}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">Regist
+											정보</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" th:href="@{/management/sessions_info}">
+									<div class="d-flex align-items-center"><span class="nav-link-text ps-1">현재 세션
+											정보</span>
+									</div>
+								</a>
+								<!-- more inner pages-->
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div class="w-100 d-grid mb-3">
+					<form id="logoutForm" action="/logout" method="post">
+						<button class="btn btn-secondary btn-fill w-100" type="submit">로그아웃</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<main class="main" id="top">
+		<div class="container ms-3" data-layout="container">
+			<div class="content">
+				<nav class="navbar navbar-light navbar-glass navbar-top navbar-expand">
+					<button class="btn navbar-toggler-humburger-icon navbar-toggler me-1 me-sm-3" type="button"
+						data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse"
+						aria-controls="navbarVerticalCollapse" aria-expanded="false"
+						aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span
+								class="toggle-line"></span></span></button>
+				</nav>
+				<h4 class="fw-bold py-2 mb-4">Ex Route 등록 </h4>
+				<div class="row g-0 mb-4">
+					<div class="col-md-12 col-xxl-12">
+						<div class="card">
+							<div class="card-body d-flex flex-wrap mt-3">
+								<form id=buttonForm class="d-flex w-100 flex-wrap">
+									<input type="hidden" name="page" id="page">
+									<div class="col-12 d-flex mt-3 flex-wrap">
+										<button id="searchModalButton" class="btn btn-primary round-fill px-4 ms-auto"
+											type="button" data-bs-toggle="modal"
+											data-bs-target="#exRouteModal">검색</button>
+										<button id="insertModalButton" class="btn btn btn-primary round-fill px-4 ms-2"
+											type="button" data-bs-toggle="modal"
+											data-bs-target="#exRouteModal">추가</button>
+										<button id="modifyModalButton"
+											class="btn btn btn-outline-primary round-fill px-4 ms-2" type="button"
+											data-bs-toggle="modal" data-bs-target="#exRouteModal">선택 수정</button>
+										<button id="deleteButton"
+											class="btn btn btn-outline-primary round-fill px-4 ms-2 me-auto"
+											type="button">선택 삭제</button>
+										<button id="searchButton" style="display: none;" type="button"></button>
+										<button id="insertButton" style="display: none;" type="button"></button>
+										<button id="modifyButton" style="display: none;" type="button"></button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row g-0 mb-4">
+					<div class="col-md-12 col-xxl-12">
+						<div class="card">
+							<div class="card-body d-flex flex-wrap mt-3">
+								<div class="table-responsive text-nowrap w-100" style="max-height: 740px;">
+									<table class="table table-striped m-0 text-start table-hover">
+										<colgroup>
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="5%" />
+											<col width="10%" />
+											<col width="10%" />
+											<col width="10%" />
+											<col width="5%" />
+											<col width="45%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th><input class="form-check-input ms-0" type="checkbox"
+														id="selectAll">선택</th>
+												<th>Pri domain</th>
+												<th>Pri addr</th>
+												<th>Pri priorty</th>
+												<th>Pri port</th>
+												<th>Sec domain</th>
+												<th>Sec addr</th>
+												<th>Sec priorty</th>
+												<th>Sec port</th>
+											</tr>
+										</thead>
+										<tbody class="table-border-bottom-0">
+											<tr th:each="exroute : ${exroutes}" class="route-row">
+												<td><input class="form-check-input ms-0 rowCheckbox" type="checkbox"
+														th:value="${exroute.ex_cnt}" id="ex_cnt" name="ex_cnt"></td>
+												<td th:text="${exroute.ex_id}"></td>
+												<td th:text="${exroute.pri_domain}"></td>
+												<td th:text="${exroute.pri_addr}"></td>
+												<td th:text="${exroute.pri_priorty}"></td>
+												<td th:text="${exroute.pri_port}"></td>
+												<td th:text="${exroute.sec_domain}"></td>
+												<td th:text="${exroute.sec_addr}"></td>
+												<td th:text="${exroute.sec_priorty}"></td>
+												<td th:text="${exroute.sec_port}"></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<nav aria-label="Page navigation" class="w-100 mt-3 d-flex">
+									<ul class="pagination mb-0 mx-auto">
+										<li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled':''">
+											<a class="page-link"
+												th:onclick="change_page([[${paging.startBlockPage-paging.pageBlock}]])"
+												aria-label="Previous">
+												<span aria-hidden="true">&laquo;</span>
+											</a>
+										</li>
+										<li th:each="page : ${#numbers.sequence(paging.startBlockPage, paging.endBlockPage)}"
+											th:classappend="${page == paging.number} ? 'active' : ''"
+											class="page-item dynamic-page">
+											<a th:text="${page+1}" class="page-link"
+												th:onclick="change_page([[${page}]])"></a>
+										</li>
+										<li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled':''">
+											<a class="page-link" th:onclick="change_page([[${paging.endBlockPage+1}]])"
+												aria-label="Next">
+												<span aria-hidden="true">&raquo;</span>
+											</a>
+										</li>
+									</ul>
+								</nav>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal fade" id="ipPoolsModal" tabindex="-1" aria-labelledby="ipPoolsModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<form id="searchFrm" th:action="@{/management/ippools_add}" method="post"
+								th:object="${ippools}">
+								<div class="modal-header">
+									<h5 class="modal-title" id="ipPoolsModalLabel">IP POOLS 정보</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+								</div>
+								<div class="modal-body">
+									<div class="row">
+										<div class="col-md-6 mb-3">
+											<label for="ex_id">Id</label>
+											<input type="text" id="i_id" name="i_id" placeholder="Id 입력"
+												class="form-control">
+										</div>
+										<div class="col-md-6 mb-3"></div>
+										<div class="col-md-6">
+											<div class="mb-3">
+												<label for="pri_domain">Pri domain</label>
+												<input type="text" id="pri_domain" name="pri_domain"
+													class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="pri_addr">Pri addr</label>
+												<input type="text" id="pri_addr" name="pri_addr" class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="pri_priorty">Pri priorty</label>
+												<select class="form-select" id='pri_priorty' name='pri_priorty'>
+													<option value="" th:selected="*{pri_priorty==''}">Pri priorty 선택
+													</option>
+													<option value="M" th:selected="*{pri_priorty=='M'}">M </option>
+													<option value="S" th:selected="*{pri_priorty=='S'}">S</option>
+												</select>
+											</div>
+											<div class="mb-3">
+												<label for="pri_port">Pri port</label>
+												<input type="text" id="pri_port" name="pri_port" class="form-control">
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="mb-3">
+												<label for="sec_domain">Sec domain</label>
+												<input type="text" id="sec_domain" name="sec_domain"
+													class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="sec_addr">Sec addr</label>
+												<input type="text" id="sec_addr" name="sec_addr" class="form-control">
+											</div>
+											<div class="mb-3">
+												<label for="sec_priorty">Sec priorty</label>
+												<select class="form-select" id='sec_priorty' name='sec_priorty'>
+													<option value="" th:selected="*{sec_priorty==''}">Sec priorty 선택
+													</option>
+													<option value="M" th:selected="*{sec_priorty=='M'}">M </option>
+													<option value="S" th:selected="*{sec_priorty=='S'}">S</option>
+												</select>
+											</div>
+											<div class="mb-3">
+												<label for="sec_port">Sec port</label>
+												<input type="text" id="sec_port" name="sec_port" class="form-control">
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-primary" id="saveExRouteBtn"></button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<footer class="footer border-top mt-4">
+					<div class="row g-0 justify-content-between fs--1 mt-4 mb-4">
+						<div class="col-12 col-sm-auto text-start">
+							<p class="mb-0 text-600">Nautes Technology | TEL. 031-463-4201</p>
+						</div>
+						<div class="col-12 col-sm-auto text-end">
+							<p class="mb-0 text-600">COPYRIGHT ⓒ 2012 NAUTES TECHNOLOGY INC.ALL RIGHTS RESERVED</p>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</div>
+	</main>
+</body>
+
+</html>

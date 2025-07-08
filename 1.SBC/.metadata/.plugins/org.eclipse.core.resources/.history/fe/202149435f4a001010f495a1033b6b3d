@@ -1,0 +1,52 @@
+package com.nautestech.www.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+import com.nautestech.www.servicImpl.CustomUserDetailsService;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+
+@Configuration
+@EnableWebSecurity
+@AllArgsConstructor
+public class LoginConfiguration {
+
+	AuthProvider authProvider;
+	CustomUserDetailsService userDetailsService;
+
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.authenticationProvider(authProvider);
+	}
+
+	@Bean
+	protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth.requestMatchers("/doLogin").permitAll()
+				.requestMatchers("/management/**").hasRole("MEMBER").anyRequest().permitAll());
+
+		http.formLogin(form -> form.loginPage("/").loginProcessingUrl("/doLogin")
+				.successHandler((request, response, authentication) -> {
+					response.setContentType("application/json;charset=UTF-8");
+					response.getWriter().write("{\"message\":\"로그인 성공\"}");
+				}).failureHandler((request, response, exception) -> {
+					response.setContentType("application/json;charset=UTF-8");
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write("{\"message\":\"로그인 실패: " + exception.getMessage() + "\"}");
+				}).usernameParameter("member_id").passwordParameter("member_password").permitAll());
+		http.rememberMe(remember -> remember.key("nautes-remember-key").rememberMeParameter("remember-me")
+				.tokenValiditySeconds(60 * 60 * 24 * 30).userDetailsService(userDetailsService));
+		// 로그아웃 설정, 해당 경로로 POST 요청 필요
+		http.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true) // 세션무효화
+				.clearAuthentication(true) // 인증 정보 삭제
+				.deleteCookies("JSESSIONID") // JSESSIONID 쿠키 삭제
+		);
+
+		return http.build();
+	}
+
+}

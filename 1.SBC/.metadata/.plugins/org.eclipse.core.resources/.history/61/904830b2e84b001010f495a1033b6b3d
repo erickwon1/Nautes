@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="callSettersOnNulls" value="true"/>
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<setting name="useGeneratedKeys" value="false"/>
+		<setting name="defaultStatementTimeout" value="180"/>
+	</settings>
+  
+	<typeAliases>
+		<typeAlias alias="member" type="com.nautestech.www.model.Member"/>
+		<typeAlias alias="route" type="com.nautestech.www.model.Route"/>
+		<typeAlias alias="currentsession" type="com.nautestech.www.model.CurrentSessionInfo"/>
+		<typeAlias alias="exroute" type="com.nautestech.www.model.ExRoute"/>
+		<typeAlias alias="modifiedtable" type="com.nautestech.www.model.Modifiedtable"/>
+	</typeAliases>
+
+</configuration>

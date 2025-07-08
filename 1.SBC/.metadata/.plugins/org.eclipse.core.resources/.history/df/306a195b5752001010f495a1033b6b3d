@@ -1,0 +1,22 @@
+package com.nautestech.www.model;
+
+import lombok.Data;
+
+@Data
+public class RegPhone {
+	rp_seq int(11)
+	AI PK rp_useflag char(1)
+
+	rp_display_name varchar(100)
+
+	rp_username varchar(100)
+
+	rp_auth_user_name varchar(100)
+
+	rp_password varchar(100) 
+	rp_expire_time int(1) 
+	rp_retry_period int(1) 
+	rp_regdate datetime 
+	rp_status char(1) 
+	rp_updateTime
+}

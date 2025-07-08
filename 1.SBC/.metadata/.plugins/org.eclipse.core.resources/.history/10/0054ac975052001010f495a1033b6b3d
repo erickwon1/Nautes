@@ -1,0 +1,47 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.RtpPoolsMapper;
+import com.nautestech.www.model.IpPools;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class RtpPoolsService implements delete {
+	RtpPoolsMapper rtpPoolsMapper;
+
+	public void setinsert(IpPools ipPools) {
+		ipPoolsMapper.setinsert(ipPools);
+	}
+
+	public void setmodify(List<Integer> iList, IpPools ipPools) {
+		ipPoolsMapper.setmodify(iList, ipPools);
+	}
+
+	public void setupdate() {
+		ipPoolsMapper.setupdate();
+	}
+
+	public Page<IpPools> getIpPools(IpPools ipPools, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(ipPools).pageable(pageable).build();
+
+		List<IpPools> content = ipPoolsMapper.getIpPools(requestList);
+		int total = ipPoolsMapper.getIpPoolsCount(requestList);
+
+		return new PageImpl<IpPools>(content, pageable, total);
+	}
+
+	@Override
+	public int setdelete(List<Integer> iList) {
+		return ipPoolsMapper.setdelete(iList);
+	}
+}

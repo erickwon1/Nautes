@@ -1,0 +1,47 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.RegPhoneMapper;
+import com.nautestech.www.model.IpPools;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class RegPhoneService implements delete {
+	RegPhoneMapper regPhoneMapper;
+
+	public void setinsert(IpPools ipPools) {
+		regPhoneMapper.setinsert(ipPools);
+	}
+
+	public void setmodify(List<Integer> iList, IpPools ipPools) {
+		regPhoneMapper.setmodify(iList, ipPools);
+	}
+
+	public void setupdate() {
+		regPhoneMapper.setupdate();
+	}
+
+	public Page<IpPools> getIpPools(IpPools ipPools, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(ipPools).pageable(pageable).build();
+
+		List<IpPools> content = regPhoneMapper.getRegPhone(requestList);
+		int total = regPhoneMapper.getRegPhoneCount(requestList);
+
+		return new PageImpl<IpPools>(content, pageable, total);
+	}
+
+	@Override
+	public int setdelete(List<Integer> iList) {
+		return regPhoneMapper.setdelete(iList);
+	}
+}

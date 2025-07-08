@@ -1,0 +1,26 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.ModifiedtableMapper;
+import com.nautestech.www.model.MrwsConfig;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class ModifiedtableService {
+	private final ModifiedtableMapper modifiedtableMapper;
+
+	public void modifyIP_POOLS() {
+		modifiedtableMapper.modifyIP_POOLS();
+	}
+
+	public MrwsConfig getModifiedTable() {
+		return modifiedtableMapper.getMrwsConfig();
+	}
+
+	public void modifyModifiedTable(MrwsConfig mrwsConfig) {
+		modifiedtableMapper.modifyMrwsConfig(mrwsConfig);
+	}
+}

@@ -1,0 +1,43 @@
+package com.nautestech.www.controller;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.ProxyChkList;
+import com.nautestech.www.model.SysConfig;
+import com.nautestech.www.servicImpl.SysConfigService;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class SysConfigController {
+
+	private final SysConfigService sysConfigService;
+
+	@RequestMapping(value = "/management/sysConfig", method = { RequestMethod.GET, RequestMethod.POST })
+	public String proxyChkListAdd(Model model) {
+		Page<ProxyChkList> proxyChkListPage = sysConfigService.get();
+		List<ProxyChkList> proxyChkLists = proxyChkListPage.getContent();
+
+		model.addAttribute("proxyChkLists", proxyChkLists);
+
+		return "/management/sysConfig";
+	}
+
+	@PostMapping("/management/sysConfig/modify")
+	@ResponseBody
+	public void modifyProxyChkList(SysConfig sysConfig) {
+
+		sysConfigService.updateSysConfig();
+		sysConfigService.modifySysConfig(pxList, proxyChkList);
+	}
+}

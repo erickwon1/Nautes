@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<section name="java.lang.Class">
+		<item key="replaceBarOpen" value="false"/>
+		<list key="findhistory">
+			<item value="rtp_loca"/>
+			<item value="r_c"/>
+			<item value="exroute_add"/>
+			<item value="route"/>
+			<item value="ExRouteModal"/>
+			<item value="exroute"/>
+			<item value="update"/>
+			<item value="ip"/>
+			<item value="-row"/>
+			<item value="rtppool-row"/>
+			<item value="td"/>
+			<item value="ippool-row"/>
+			<item value="ippools"/>
+			<item value=".ippools"/>
+			<item value=".ippool-"/>
+		</list>
+	</section>
+</section>

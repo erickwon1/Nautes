@@ -1,0 +1,18 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface ModifiedtableMapper {
+	public void modifyIP_POOLS();
+
+	public void modifyRTP_POOLS();
+
+	public void modifyMRWS_CONFIG();
+
+	public void modifyRoute2();
+
+	public void modifyPROXY_CHK_LIST();
+
+	public void modifyEX_ROUTE();
+}

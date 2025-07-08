@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.RegistInfoMapper">
+	<resultMap type="registinfo" id="registinfoMap">
+		<result property="r_cnt" column="r_cnt" />
+		<result property="r_user" column="r_user" />
+		<result property="r_fromHost" column="r_fromHost" />
+		<result property="r_fromIp" column="r_fromIp" />
+		<result property="r_fromPort" column="r_fromPort" />
+		<result property="r_fromParam" column="r_fromParam" />
+		<result property="r_toHost" column="r_toHost" />
+		<result property="r_toIp" column="r_toIp" />
+		<result property="r_toPort" column="r_toPort" />
+		<result property="r_toParam" column="r_toParam" />
+		<result property="r_nat" column="r_nat" />
+		<result property="r_natIp" column="r_natIp" />
+		<result property="r_natport" column="r_natport" />
+		<result property="r_regtime" column="r_regtime" />
+		<result property="r_fromFieldHost" column="r_fromFieldHost" />
+		<result property="r_toFieldHost" column="r_toFieldHost" />
+		<result property="r_fromproto" column="r_fromproto" />
+		<result property="r_toproto" column="r_toproto" />
+		<result property="r_fromid" column="r_fromid" />
+		<result property="r_toid" column="r_toid" />
+		<result property="r_expire" column="r_expire" />
+	</resultMap>
+	<select id="getRegists" parameterType="com.nautestech.www.model.RegistInfo"
+		resultMap="registinfoMap">
+		SELECT * FROM REGIST_INFO
+		ORDER BY c_stime ASC
+	</select>
+</mapper>

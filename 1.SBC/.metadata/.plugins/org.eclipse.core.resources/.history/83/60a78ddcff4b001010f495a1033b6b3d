@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.ProxyChkListMapper">
+	<resultMap type="proxychklist" id="proxyChkListMap" >
+		<result property="px_cnt" column="px_cnt" />
+		<result property="px_domain" column="px_domain" />
+		<result property="px_addr" column="px_addr" />
+		<result property="px_port" column="px_port" />
+		<result property="px_from" column="px_from" />
+		<result property="px_to" column="px_to" />
+		<result property="opt_chkcount" column="opt_chkcount" />
+		<result property="opt_sndterm" column="opt_sndterm" />
+	</resultMap>
+    <select id="getProxyChkList" parameterType="com.nautestech.www.model.ProxyChkList" resultMap="proxyChkListMap">
+        SELECT * FROM PROXY_CHK_LIST
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.px_domain != null and data.px_domain != '-1'">
+            	 AND px_domain LIKE CONCAT('%', #{data.px_domain}, '%')
+        	</if>
+         	<if test="data.px_addr != null and data.px_addr != ''">
+            	 AND px_addr LIKE CONCAT('%', #{data.px_addr}, '%')
+        	</if>
+        	 <if test="data.px_port != null and data.px_port != ''">
+            	AND px_port LIKE CONCAT('%', #{data.px_port}, '%')
+        	</if>
+        	<if test="data.px_from != null and data.px_from != ''">
+            	AND px_from LIKE CONCAT('%', #{data.px_from}, '%')
+        	</if>
+        	<if test="data.px_to != null and data.px_to != ''">
+            	AND px_to LIKE CONCAT('%', #{data.px_to}, '%')
+        	</if>
+        	<if test="data.opt_chkcount != null and data.opt_chkcount != ''">
+            	AND opt_chkcount LIKE CONCAT('%', #{data.opt_chkcount}, '%')
+        	</if>
+			<if test="data.opt_sndterm != null and data.opt_sndterm != ''">
+            	AND opt_sndterm LIKE CONCAT('%', #{data.opt_sndterm}, '%')
+        	</if>
+		</trim>
+		ORDER BY px_domain ASC
+		LIMIT #{pageable.offset}, #{pageable.pageSize};
+    </select>
+    <select id="getProxyChkListCount" parameterType="com.nautestech.www.model.ProxyChkList" resultType="int">
+        SELECT COUNT(*) FROM PROXY_CHK_LIST
+        WHERE 1=1
+        <trim prefix="AND" prefixOverrides="AND">
+        	<if test="data.px_domain != null and data.px_domain != '-1'">
+            	 AND px_domain LIKE CONCAT('%', #{data.px_domain}, '%')
+        	</if>
+         	<if test="data.px_addr != null and data.px_addr != ''">
+            	 AND px_addr LIKE CONCAT('%', #{data.px_addr}, '%')
+        	</if>
+        	 <if test="data.px_port != null and data.px_port != ''">
+            	AND px_port LIKE CONCAT('%', #{data.px_port}, '%')
+        	</if>
+        	<if test="data.px_from != null and data.px_from != ''">
+            	AND px_from LIKE CONCAT('%', #{data.px_from}, '%')
+        	</if>
+        	<if test="data.px_to != null and data.px_to != ''">
+            	AND px_to LIKE CONCAT('%', #{data.px_to}, '%')
+        	</if>
+        	<if test="data.opt_chkcount != null and data.opt_chkcount != ''">
+				AND opt_chkcount LIKE CONCAT('%', #{data.opt_chkcount}, '%')
+			</if>
+			<if test="data.opt_sndterm != null and data.opt_sndterm != ''">
+				AND opt_sndterm = #{data.opt_sndterm}
+			</if>
+		</trim>
+	</select>
+	<insert id="insertProxyChkList"
+		parameterType="com.nautestech.www.model.ProxyChkList"> INSERT INTO
+		PROXY_CHK_LIST <trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="px_domain != null and px_domain != ''">px_domain,</if>
+			<if test="px_addr != null and px_addr != ''">px_addr,</if>
+			<if test="px_port != null">px_port,</if>
+			<if test="px_from != null and px_from != ''">px_from,</if>
+			<if test="px_to != null and px_to != ''">px_to,</if>
+			<if test="opt_chkcount != null">opt_chkcount,</if>
+			<if test="opt_sndterm != null">r_udpport,</if>
+		</trim> VALUES <trim
+			prefix="(" suffix=")" suffixOverrides=",">
+			<if test="px_domain != null and px_domain != ''">#{px_domain},</if>
+			<if test="px_addr != null and px_addr != ''">#{px_addr},</if>
+			<if test="px_port != null and">#{px_port},</if>
+			<if test="px_from != null and px_from != ''">#{px_from},</if>
+			<if test="px_to != null and px_to != ''">#{px_to},</if>
+			<if test="opt_chkcount != null">
+				#{opt_chkcount},</if>
+			<if test="opt_chkcount != null">#{opt_chkcount},</if>
+		</trim>
+	</insert>
+	<delete id="deleteProxyChkList" parameterType="java.util.List"> DELETE FROM
+		PROXY_CHK_LIST WHERE r_cnt IN <foreach item="px_cnt" collection="px_cnt"
+			open="("
+			separator="," close=")">
+			#{px_cnt}
+		</foreach>
+	</delete>
+	<update id="updateProxyChkList">
+		UPDATE modified_table set PROXY_CHK_LIST='1';
+	</update>
+	<update id="setmodify"> UPDATE PROXY_CHK_LIST SET px_domain =
+		#{proxyChkList.px_domain}, px_addr = #{proxyChkList.px_addr}, px_port =
+		#{proxyChkList.px_port}, px_from = #{proxyChkList.px_from}, px_to =
+		#{proxyChkList.px_to}, opt_chkcount = #{proxyChkList.opt_chkcount},
+		opt_sndterm = #{proxyChkList.opt_sndterm} WHERE px_cnt IN <foreach
+			item="px_cnt"
+			collection="px_cnt" open="("
+			separator="," close=")">
+			#{px_cnt}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,47 @@
+package com.nautestech.www.servicImpl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.model.Route;
+import com.nautestech.www.service.delete;
+
+import lombok.AllArgsConstructor;
+import utils.RequestList;
+
+@Service
+@AllArgsConstructor
+public class ProxyChkListService implements delete {
+
+	private final ProxyChkListMapper proxyChkListMapper;
+
+	public void insertRoutes(Route insertRoute) {
+		proxyChkListMapper.insertRoutes(insertRoute);
+	}
+
+	@Override
+	public int setdelete(List<Integer> rList) {
+		return proxyChkListMapper.deleteRoutes(rList);
+	}
+
+	public Page<Route> getRoutes(Route route, Pageable pageable) {
+		RequestList<?> requestList = RequestList.builder().data(route).pageable(pageable).build();
+
+		List<Route> content = proxyChkListMapper.getRoutes(requestList);
+		int total = proxyChkListMapper.getRoutesCount(requestList);
+
+		return new PageImpl<Route>(content, pageable, total);
+	}
+
+	public void setupdate() {
+		proxyChkListMapper.updateRoutes();
+	}
+
+	public void setmodify(List<Integer> rList, Route route) {
+		proxyChkListMapper.setmodify(rList, route);
+	}
+}

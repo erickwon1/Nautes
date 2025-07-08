@@ -1,0 +1,26 @@
+package com.nautestech.www.controller;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.nautestech.www.model.CurrentSessionInfo;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class RegistInfoController {
+	private final RegistInfoService registInfoService;
+
+	@GetMapping("/management/regist_info")
+	public String registInfo(Model model) {
+		List<CurrentSessionInfo> sessions = registInfoService.getRegist();
+
+		model.addAttribute("sessions", sessions);
+
+		return "/management/regist_info";
+	}
+}

@@ -1,0 +1,21 @@
+package com.nautestech.www.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+
+@Data
+public class ModifiedTable {
+	@JsonProperty("IP_POOLS")
+	Integer IP_POOLS;
+	@JsonProperty("RTP_POOLS")
+	Integer RTP_POOLS;
+	@JsonProperty("MRWS_CONFIG")
+	Integer MRWS_CONFIG;
+	@JsonProperty("ROUTE2")
+	Integer ROUTE2;
+	@JsonProperty("PROXY_CHK_LIST")
+	Integer PROXY_CHK_LIST;
+	@JsonProperty("EX_ROUTE")
+	Integer EX_ROUTE;
+}

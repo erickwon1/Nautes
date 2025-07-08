@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nautestech.www.mapper.RtpPoolsMapper">
+	<resultMap type="rtppools" id="rtppoolsMap">
+		<result property="r_cnt" column="r_cnt" />
+		<result property="mrws_id" column="mrws_id" />
+		<result property="rtp_loca" column="rtp_loca" />
+		<result property="rtp_zone" column="rtp_zone" />
+	</resultMap>
+	<select id="getRtpPools" parameterType="com.nautestech.www.model.RtpPools"
+		resultMap="rtppoolsMap"> SELECT * FROM RTP_POOLS WHERE 1=1 <trim
+			prefix="AND" prefixOverrides="AND">
+			<if test="data.i_id != null and data.i_id != ''">
+				AND i_id LIKE CONCAT('%', #{data.i_id}, '%')
+			</if>
+			<if test="data.i_local != null and data.i_local != ''">
+				AND i_local LIKE CONCAT('%', #{data.i_local}, '%')
+			</if>
+			<if test="data.i_zone != null and data.i_zone != ''">
+				AND i_zone LIKE CONCAT('%', #{data.i_zone}, '%')
+			</if>
+		</trim>
+		ORDER BY i_id ASC LIMIT #{pageable.offset}, #{pageable.pageSize}; </select>
+	<select id="getIpPoolsCount"
+		parameterType="com.nautestech.www.model.IpPools" resultType="int">
+		SELECT COUNT(*) FROM IP_POOLS WHERE 1=1 <trim prefix="AND"
+			prefixOverrides="AND">
+			<if test="data.i_id != null and data.i_id != ''">
+				AND i_id LIKE CONCAT('%', #{data.i_id}, '%')
+			</if>
+			<if test="data.i_local != null and data.i_local != ''">
+				AND i_local LIKE CONCAT('%', #{data.i_local}, '%')
+			</if>
+			<if test="data.i_zone != null and data.i_zone != ''">
+				AND i_zone LIKE CONCAT('%', #{data.i_zone}, '%')
+			</if>
+		</trim>
+	</select>
+	<insert id="setinsert" parameterType="IpPools">
+		INSERT INTO IP_POOLS (
+		i_id, i_local, i_zone
+		)
+		VALUES (
+		#{i_id}, #{i_local}, #{i_zone}
+		)
+	</insert>
+	<update id="setmodify"> UPDATE IP_POOLS SET i_id = #{ipPools.i_id},
+		i_local = #{ipPools.i_local}, i_zone = #{ipPools.i_zone}
+		WHERE i_cnt IN <foreach item="i_cnt"
+			collection="i_cnt" open="("
+			separator="," close=")">
+			#{i_cnt}
+		</foreach>
+	</update>
+	<update id="setupdate">
+		UPDATE modified_table set IP_POOLS='1';
+	</update>
+	<delete id="setdelete" parameterType="java.util.List"> DELETE FROM IP_POOLS
+		WHERE i_cnt IN <foreach item="i_cnt" collection="i_cnt" open="("
+			separator="," close=")">
+			#{i_cnt}
+		</foreach>
+	</delete>
+</mapper>

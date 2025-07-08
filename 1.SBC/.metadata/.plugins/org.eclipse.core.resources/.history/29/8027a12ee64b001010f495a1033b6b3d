@@ -1,0 +1,132 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.ProxyChkList;
+import com.nautestech.www.model.Route;
+import com.nautestech.www.servicImpl.ModifiedtableService;
+import com.nautestech.www.servicImpl.ProxyChkListService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class ProxyChkListController {
+
+	private final ProxyChkListService proxyChkListService;
+	private final ModifiedtableService modifiedtableService;
+
+	@RequestMapping(value = "/management/proxyChkList_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String routingTableAdd(Pageable pageable, @ModelAttribute ProxyChkList proxyChkList, Model model) {
+		Page<ProxyChkList> proxyChkListPage = proxyChkListService.getProxyChkLists(proxyChkList, pageable);
+		List<ProxyChkList> proxyChkLists = proxyChkListPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (proxyChkListPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < proxyChkListPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= proxyChkListPage.getTotalPages()) {
+			if (proxyChkListPage.getTotalPages() == 0) {
+				endBlockPage = proxyChkListPage.getTotalPages();
+			} else {
+				endBlockPage = proxyChkListPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", proxyChkListPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", proxyChkListPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("proxyChkLists", proxyChkLists);
+		model.addAttribute("paging", paging);
+
+		proxyChkListService.setupdate();
+
+		return "/management/proxyChkList_add";
+	}
+
+	@PostMapping("/management/proxyChkList_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> routingTableAdd(@Valid @ModelAttribute ProxyChkList proxyChkList,
+			BindingResult bindingResult) throws Exception {
+//		routeValidator.validate(proxyChkList, bindingResult);
+		modifiedtableService.modifyPROXY_CHK_LIST();
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = new HashMap<>();
+			for (FieldError error : bindingResult.getFieldErrors()) {
+				errors.put(error.getField(), error.getDefaultMessage());
+			}
+			return ResponseEntity.badRequest().body(errors);
+		}
+
+		proxyChkListService.insertProxyChkList(proxyChkList);
+		proxyChkListService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/proxyChkList_add/delete")
+	@ResponseBody
+	public int deleteRoutes(@RequestBody Map<String, List<String>> requestData) {
+		List<String> rCnt = requestData.get("px_cnt");
+		List<Integer> rList = rCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = proxyChkListService.setdelete(rList);
+		proxyChkListService.setupdate();
+		modifiedtableService.modifyPROXY_CHK_LIST();
+		return deletenum;
+	}
+
+	@PostMapping("/management/proxyChkList_add/modify")
+	@ResponseBody
+	public void modifyRoutes(@RequestBody Map<String, Object> requestData) {
+		List<String> pxCnt = (List<String>) requestData.get("px_cnt");
+		List<Integer> pxList = pxCnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		String px_domain = requestData.get("px_domain") != null ? requestData.get("px_domain").toString() : null;
+		String px_addr = requestData.get("px_addr") != null ? requestData.get("px_addr").toString() : null;
+		Integer px_port = requestData.get("px_port") != null ? Integer.parseInt(requestData.get("px_port").toString())
+				: null;
+		String px_from = requestData.get("px_from") != null ? requestData.get("px_from").toString() : null;
+		String px_to = requestData.get("px_to") != null ? requestData.get("px_to").toString() : null;
+		Integer opt_chkcount = requestData.get("opt_chkcount") != null
+				? Integer.parseInt(requestData.get("opt_chkcount").toString())
+				: null;
+		Integer opt_sndterm = requestData.get("opt_sndterm") != null
+				? Integer.parseInt(requestData.get("opt_sndterm").toString())
+				: null;
+
+		Route route = new Route();
+		route.setR_type(r_type);
+		route.setR_src(r_src);
+		route.setR_method(r_method);
+		route.setR_rprnum(r_rprnum);
+		route.setR_proxy_domain(r_proxy_domain);
+		route.setR_proxy_addr(r_proxy_addr);
+		route.setR_udpport(r_udpport);
+		route.setMemo(memo);
+
+		modifiedtableService.modifyRoute2();
+		routeService.setmodify(rList, route);
+	}
+}

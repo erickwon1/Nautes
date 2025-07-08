@@ -1,0 +1,6 @@
+package com.nautestech.www.model;
+
+@data
+public class MrwsConfig {
+
+}

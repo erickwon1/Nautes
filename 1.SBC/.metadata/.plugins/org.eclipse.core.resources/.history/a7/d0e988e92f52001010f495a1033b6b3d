@@ -1,0 +1,20 @@
+package com.nautestech.www.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.nautestech.www.model.ExRoute;
+
+@Mapper
+public interface ExRouteMapper {
+	public ExRoute FindByExId(String ex_Id);
+
+	public void setinsert(ExRoute exRoute);
+
+	public void setmodify(ExRoute exRoute);
+
+	public void setupdate();
+
+	public Page<ExRoute> getExRoutes(ExRoute exRoute, Pageable pageable);
+}

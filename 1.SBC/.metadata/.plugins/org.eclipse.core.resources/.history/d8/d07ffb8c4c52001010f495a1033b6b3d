@@ -1,0 +1,103 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.IpPools;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class IpPoolsController {
+	private IpPoolsService ipPoolsService;
+
+	@RequestMapping(value = "/management/ipPools_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String exRouteAdd(Pageable pageable, @ModelAttribute IpPools ippool, Model model) {
+		Page<IpPools> ipPoolsPage = ipPoolsService.getExRoutes(ippool, pageable);
+		List<IpPools> ippools = ipPoolsPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (ipPoolsPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < ipPoolsPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= ipPoolsPage.getTotalPages()) {
+			if (ipPoolsPage.getTotalPages() == 0) {
+				endBlockPage = ipPoolsPage.getTotalPages();
+			} else {
+				endBlockPage = ipPoolsPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", ipPoolsPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", ipPoolsPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("ippools", ippools);
+		model.addAttribute("paging", paging);
+
+		return "/management/ipPools_add";
+	}
+
+	@PostMapping("/management/ipPools_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> exRouteAdd(@Valid @ModelAttribute IpPools ipPools) {
+		ipPoolsService.setinsert(ipPools);
+		ipPoolsService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/ipPools_add/delete")
+	@ResponseBody
+	public int deleteExRoutes(@RequestBody Map<String, List<String>> requestData) {
+		List<String> i_cnt = requestData.get("i_cnt");
+		List<Integer> iList = i_cnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = ipPoolsService.setdelete(iList);
+		ipPoolsService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/ipPools_add/modify")
+	@ResponseBody
+	public void modifyExRoutes(@RequestBody Map<String, Object> requestData) {
+		List<String> i_cnt = (List<String>) requestData.get("i_cnt");
+		List<Integer> iList = i_cnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		Integer i_id = requestData.get("i_id") != null ? Integer.parseInt(requestData.get("i_id").toString()) : null;
+		String ex_id = requestData.get("ex_id") != null ? requestData.get("ex_id").toString() : null;
+		String pri_domain = requestData.get("pri_domain") != null ? requestData.get("pri_domain").toString() : null;
+
+		IpPools ipPools = new IpPools();
+		exRoute.setEx_id(ex_id);
+		exRoute.setPri_domain(pri_domain);
+		exRoute.setPri_addr(pri_addr);
+		exRoute.setPri_priorty(pri_priorty);
+		exRoute.setPri_port(pri_port);
+		exRoute.setSec_domain(sec_domain);
+		exRoute.setSec_addr(sec_addr);
+		exRoute.setSec_priorty(sec_priorty);
+		exRoute.setSec_port(sec_port);
+
+		ipPoolsService.setupdate();
+		ipPoolsService.setmodifybyCnt(iList, exRoute);
+	}
+}

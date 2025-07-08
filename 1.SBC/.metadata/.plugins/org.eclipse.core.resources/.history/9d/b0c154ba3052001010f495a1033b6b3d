@@ -1,0 +1,29 @@
+package com.nautestech.www.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.nautestech.www.model.ExRoute;
+
+import utils.RequestList;
+
+@Mapper
+public interface ExRouteMapper {
+	public ExRoute FindByExId(String ex_Id);
+
+	public void setinsert(ExRoute exRoute);
+
+	public void setmodify(ExRoute exRoute);
+
+	public void setmodify(List<Integer> exList, ExRoute exRoute);
+
+	public void setupdate();
+
+	public List<ExRoute> getExRoutes(RequestList<?> requestList);
+
+	public int getExRoutesCount(RequestList<?> requestList);
+
+	public int setdelete(@Param("ex_cnt") List<Integer> exList);
+}

@@ -1,0 +1,23 @@
+package com.nautestech.www.servicImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.mapper.SysConfigMapper;
+import com.nautestech.www.model.SysConfig;
+
+import lombok.AllArgsConstructor;
+
+@Service
+@AllArgsConstructor
+public class SysConfigService {
+
+	private final SysConfigMapper sysConfigMapper;
+
+	public void updateSysConfig() {
+		sysConfigMapper.updateSysConfig();
+	}
+
+	public void modifySysConfig(SysConfig sysConfig) {
+		sysConfigMapper.modifySysConfig(sysConfig);
+	}
+}

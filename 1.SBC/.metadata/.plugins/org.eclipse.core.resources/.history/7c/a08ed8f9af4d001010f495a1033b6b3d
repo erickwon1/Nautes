@@ -1,0 +1,36 @@
+package com.nautestech.www.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.SysConfig;
+import com.nautestech.www.servicImpl.SysConfigService;
+
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class MrwsConfigController {
+
+	private final SysConfigService sysConfigService;
+
+	@RequestMapping(value = "/management/mrwsConfig", method = { RequestMethod.GET, RequestMethod.POST })
+	public String proxyChkListAdd(Model model) {
+		SysConfig sysConfig = sysConfigService.getSysConfig();
+
+		model.addAttribute("sysConfig", sysConfig);
+
+		return "/management/sysConfig";
+	}
+
+	@PostMapping("/management/sysConfig/modify")
+	@ResponseBody
+	public void modifyProxyChkList(@RequestBody SysConfig sysConfig) {
+		sysConfigService.modifySysConfig(sysConfig);
+	}
+}

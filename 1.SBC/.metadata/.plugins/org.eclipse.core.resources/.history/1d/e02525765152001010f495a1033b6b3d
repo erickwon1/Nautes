@@ -1,0 +1,99 @@
+package com.nautestech.www.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.nautestech.www.model.RtpPools;
+import com.nautestech.www.servicImpl.RtpPoolsService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@Controller
+@AllArgsConstructor
+public class RtpPoolsController {
+	private RtpPoolsService rtpPoolsService;
+
+	@RequestMapping(value = "/management/rtpPools_add", method = { RequestMethod.GET, RequestMethod.POST })
+	public String rtpPoolsAdd(Pageable pageable, @ModelAttribute RtpPools rtppool, Model model) {
+		Page<RtpPools> rtpPoolsPage = rtpPoolsService.getRtpPools(rtppool, pageable);
+		List<RtpPools> rtppools = rtpPoolsPage.getContent();
+		int pageBlock = 5;// 한블럭에 나올 페이지 수
+		int startBlockPage = (rtpPoolsPage.getNumber() / pageBlock) * pageBlock;
+		int endBlockPage = startBlockPage + pageBlock - 1;
+		boolean previous = startBlockPage >= pageBlock ? true : false;
+		boolean next = endBlockPage < rtpPoolsPage.getTotalPages() - 1 ? true : false;
+		if (endBlockPage >= rtpPoolsPage.getTotalPages()) {
+			if (rtpPoolsPage.getTotalPages() == 0) {
+				endBlockPage = rtpPoolsPage.getTotalPages();
+			} else {
+				endBlockPage = rtpPoolsPage.getTotalPages() - 1;
+			}
+		}
+		HashMap<String, Object> paging = new HashMap<>();
+		paging.put("totalPages", rtpPoolsPage.getTotalPages());
+		paging.put("hasPrevious", previous);
+		paging.put("number", rtpPoolsPage.getNumber());
+		paging.put("hasNext", next);
+		paging.put("pageBlock", pageBlock);
+		paging.put("startBlockPage", startBlockPage);
+		paging.put("endBlockPage", endBlockPage);
+
+		model.addAttribute("rtppools", rtppools);
+		model.addAttribute("paging", paging);
+
+		return "/management/rtpPools_add";
+	}
+
+	@PostMapping("/management/rtpPools_add/insert")
+	@ResponseBody
+	public ResponseEntity<?> rtpPoolsAdd(@Valid @ModelAttribute RtpPools rtpPools) {
+		rtpPoolsService.setinsert(rtpPools);
+		rtpPoolsService.setupdate();
+		return ResponseEntity.ok("OK");
+	}
+
+	@PostMapping("/management/rtpPools_add/delete")
+	@ResponseBody
+	public int deleteRtpPools(@RequestBody Map<String, List<String>> requestData) {
+		List<String> i_cnt = requestData.get("i_cnt");
+		List<Integer> iList = i_cnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+		int deletenum = rtpPoolsService.setdelete(iList);
+		rtpPoolsService.setupdate();
+		return deletenum;
+	}
+
+	@PostMapping("/management/rtpPools_add/modify")
+	@ResponseBody
+	public void modifyRtpPools(@RequestBody Map<String, Object> requestData) {
+		List<String> r_cnt = (List<String>) requestData.get("r_cnt");
+		List<Integer> rList = r_cnt.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+		Integer mrws_id = requestData.get("mrws_id") != null ? Integer.parseInt(requestData.get("mrws_id").toString())
+				: null;
+		String rtp_local = requestData.get("rtp_local") != null ? requestData.get("rtp_local").toString() : null;
+		String rtp_zone = requestData.get("rtp_zone") != null ? requestData.get("rtp_zone").toString() : null;
+
+		RtpPools rtpPools = new RtpPools();
+		rtpPools.setMrws_id(mrws_id);
+		rtpPools.setRtp_local(rtp_local);
+		rtpPools.setRtp_zone(rtp_zone);
+
+		rtpPoolsService.setupdate();
+		rtpPoolsService.setmodify(rList, rtpPools);
+	}
+}
