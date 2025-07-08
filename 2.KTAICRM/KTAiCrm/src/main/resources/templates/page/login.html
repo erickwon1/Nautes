@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr"  xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>KT CRM</title>
+
+	<link rel="stylesheet" type="text/css" href="../assets/css/reset.css">
+	<link rel="stylesheet" href="../assets/jqwidgets/styles/jqx.base.css" type="text/css" />
+	<link rel="stylesheet" href="../assets/jqwidgets/styles/jqx.light.css" type="text/css" />
+	<!-- <link rel="shortcut icon" href="../images/favicon.ico"> -->
+	<link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
+	<link rel="stylesheet" href="../assets/css/animate.min.css">
+
+	<script src="../assets/js/jquery-3.6.0.min.js"></script>
+	<script src="../assets/js/bootstrap.bundle.min.js"></script>
+	<script src="../assets/js/all.min.js"></script>
+	
+
+	<script type="text/javascript" src="../assets/jqwidgets/jqxcore.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxdata.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxbuttons.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxscrollbar.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxpanel.js"></script>
+	
+	<script src="../assets/js/view_js/login.js"></script>
+	<link rel="stylesheet" type="text/css" href="../assets/css/style.css">
+</head>
+
+<body>
+	<main class="main p-sm-4 p-2">
+		<div class="row g-0 mt-0 w-100 flex-lg-nowrap me-0 h-100">
+			<div class="col-xxl-3 col-lg-4 col-12 mb-lg-0 flex-fill">
+				<div class="card h-100 position-relative login_card">
+					<div class="rounded-round text-center kt_bg_color login-form-bg"></div>
+
+					<div
+						class="position-absolute top-50 start-50 translate-middle text-center w-100 px-3 login_form_position px-sm-4">
+						<h1 class="mb-3"><img src="../assets/img/logo.png" class="login_logo" alt="KT AI-CRM Logo" />
+						</h1>
+						<div class="card-form shadow bg-white py-4 py-lg-5 px-3 w-100">
+							<div class="login_txt">
+								<h2 class="text-dark mb-3">KT AI - CRM 로그인</h2>
+								<p>KT AI - CRM 로그인 페이지에 오신 것을 환영합니다. <br>아래에 전화번호와 비밀번호를 입력하여 로그인을 진행해 주세요.</p>
+							</div>
+							<form class="mt-4 pt-2">
+								<div class="input-group mb-3">
+									<span class="input-group-text px-sm-4 px-3 py-3" id="basic-addon1"><i
+											class="fas fa-phone-alt"></i></span>
+									<input type="text" name="id_input" id="id_input"
+										class="form-control text-center pe-3 pe-sm-5 ps-0" placeholder="전화번호 입력"
+										aria-label="phonenum_input" aria-describedby="basic-addon1">
+								</div>
+								<div class="input-group mb-3">
+									<span class="input-group-text px-3 py-3 px-sm-4" id="basic-addon1"><i
+											class="fas fa-lock"></i></span>
+									<input type="password" name="password_input" id="password_input"
+										class="form-control text-center pe-3 pe-sm-5 ps-0" placeholder="비밀번호 입력"
+										aria-label="phonenum_input" aria-describedby="basic-addon1">
+								</div>
+								<div class="d-flex px-3 mb-4 py-1 flex-wrap">
+									<div class="form-check me-auto pe-3 mb-2">
+										<input class="form-check-input" type="checkbox"name = "auto_login" value="" id="auto_login">
+										<label class="form-check-label" for="auto_login">
+											자동 로그인
+										</label>
+									</div>
+									<a alt="비밀번호 재설정 페이지로 이동하기" href="/pw_reset">비밀번호 재설정</a>
+								</div>
+								<div class="d-flex px-4">
+									<a type="button" id="login" class="btn btn-login strong p-3 w-100 shadow">로그인</a>
+								</div>
+
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xxl-9 col-lg-8 col-12 ms-lg-4 ms-0 flex-fill d-none d-lg-block">
+				<div class="card p-4 h-100">
+					<img class="m-auto login_bg_img" src="../assets/img/crm_login_bg.png"
+						alt="KT CRM 로그인 페이지 백그라운드 이미지">
+				</div>
+			</div>
+
+		</div>
+
+	</main>
+
+
+</body>
+
+</html>

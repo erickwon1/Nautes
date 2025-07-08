@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en-US" dir="ltr">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>KT CRM</title>
+
+	<link rel="stylesheet" type="text/css" href="../assets/css/reset.css">
+	<link rel="stylesheet" href="../assets/jqwidgets/styles/jqx.base.css" type="text/css" />
+	<link rel="stylesheet" href="../assets/jqwidgets/styles/jqx.light.css" type="text/css" />
+	<!-- <link rel="shortcut icon" href="../images/favicon.ico"> -->
+	<link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
+	<link rel="stylesheet" href="../assets/css/animate.min.css">
+
+	<script src="../assets/js/jquery-3.6.0.min.js"></script>
+	<script src="../assets/js/bootstrap.bundle.min.js"></script>
+	<script src="../assets/js/all.min.js"></script>
+
+	<script type="text/javascript" src="../assets/jqwidgets/jqxcore.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxdata.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxbuttons.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxscrollbar.js"></script>
+	<script type="text/javascript" src="../assets/jqwidgets/jqxpanel.js"></script>
+
+	<script src="../assets/js/view_js/logout.js"></script>
+	<link rel="stylesheet" type="text/css" href="../assets/css/style.css">
+
+	<script>
+		$(document).ready(function () {
+
+			var totalHeight = 530;   // 전체 영역 높이
+			var baseline = 40;       // 최소 textarea 높이 (한 줄일 때 높이)
+
+			$("#con1_search_btn").click(function () {
+				alert($("#p_data").val());
+			});
+			// .chatter_convo 높이 업데이트 및 스크롤 맨 아래로 이동 함수
+			function updateConvoHeight() {
+				var inputHeight = $('.chat_input').outerHeight();
+				if (inputHeight <= baseline) {
+					// 한 줄일 경우 .chatter_convo를 전체 높기로 유지
+					$('.chatter_convo').height(totalHeight);
+				} else {
+					// 두 줄 이상이면 초과되는 부분만큼 높이를 줄임
+					$('.chatter_convo').height(totalHeight - (inputHeight - baseline));
+				}
+				$('.chatter_convo').scrollTop($('.chatter_convo')[0].scrollHeight);
+			}
+
+			// textarea 자동 크기 조절 (최대 5줄 제한 예제)
+			var lineHeight = 20;        // 한 줄 높이 (CSS의 line-height와 일치)
+			var maxRows = 5;
+			var maxHeight = lineHeight * maxRows;
+
+			function autoResize(textarea) {
+				$(textarea).css('height', 'auto');
+				var newHeight = textarea.scrollHeight;
+				if (newHeight > maxHeight) {
+					newHeight = maxHeight;
+					$(textarea).css('overflow-y', 'auto');
+				} else {
+					$(textarea).css('overflow-y', 'hidden');
+				}
+				$(textarea).css('height', newHeight + 'px');
+				updateConvoHeight();  // 높이 변경 후 채팅 영역 업데이트
+			}
+
+			var $textarea = $('.chat_input');
+			if ($textarea.length) {
+				$textarea.on('input', function () {
+					autoResize(this);
+				});
+				// 페이지 로드시 초기 높이 설정
+				autoResize($textarea[0]);
+			}
+		});
+
+		function selectContact(element) {
+			$(".list-group-item").removeClass("active");
+			$(element).addClass("active");
+
+			// 선택한 연락처 정보 가져오기
+			let name = $(element).find(".fw-bold span:first").text().trim();
+			let company = $(element).find(".fw-bold span:last").text().trim();
+			let phone = $(element).find("p.mb-0 span").text().trim();
+
+			// 우측 카드에 데이터 반영
+			$("#contactName").text(name);
+			$("#contactCompany").text(company);
+			$("#contactPhone").text(phone);
+
+			contactCardActive();//연락처 카드 활성화
+		}
+
+		function currentdatetime() {
+			if (document.getElementById('currentdatetime').value == '') {
+				document.getElementById('currentdatetime').value = new Date().toLocaleString("sv-SE", {timeZone: "Asia/Seoul"}).replace(" ", "T").slice(0, 16);
+			} else {
+				document.getElementById('currentdatetime').value = '';
+			}
+		}
+
+		function toggleFileInput() {
+			let channel = document.getElementById("channel").value;
+			let fileInput = document.getElementById("fileInput");
+			let subjectField = document.getElementById("subjectField");
+
+			if (channel === "MMS") {
+				fileInput.style.display = "block"; // MMS면 파일 업로드 보이기
+				subjectField.style.display = "block"; // 제목 입력 활성화
+			} else if (channel === "LMS") {
+				fileInput.style.display = "none"; // LMS는 파일 업로드 숨김
+				subjectField.style.display = "block"; // LMS도 제목 입력 활성화
+			} else {
+				fileInput.style.display = "none"; // SMS는 파일 업로드 숨김
+				subjectField.style.display = "none"; // 제목 입력 숨김
+			}
+		}
+
+		function contactCardActive() {
+			let contactCard = document.getElementById("contactCard");
+			contactCard.style.display = "block"; // MMS면 파일 업로드 보이기
+		}
+
+		function sendMsg() {
+			let channel = $("#channel").val(); // SMS, LMS, MMS
+			let msgKind = $("#msgKind").val(); // I (정보성), A (광고성)
+			let smssubject = $("#smssubject").val() || null; // LMS/MMS 제목
+			let content = $("#content").val().trim();
+			let callbackNum = "07077276940"; // 회신번호
+			let unsubscribeNum = msgKind === "A" ? "0801234567" : null; // 광고성 메시지일 때만 필수
+			let reserveTime = $("#flexCheckDefault").is(":checked") ? $("#currentdatetime").val() : null; // 예약 전송 시간
+
+			if (reserveTime) {
+				let date = new Date(reserveTime);
+				date.setHours(date.getHours() + 9);
+				let formattedReserveTime = date.toISOString().slice(2, 19).replace(/[-T:]/g, "");
+				reserveTime = formattedReserveTime; // YYMMDDHHmmss 형식 적용
+			}
+
+			// MMS 파일 업로드 처리 (규격 검증 포함)
+			let files = $("#smsfile")[0].files;
+			let fileList = [];
+			let fileReaderPromises = [];
+
+			if (channel === "MMS" && files.length > 0) {
+				if (files.length > 3) {
+					alert("이미지는 최대 3개까지만 업로드할 수 있습니다.");
+				} else {
+					for (let i = 0; i < files.length; i++) {
+						let file = files[i];
+						let reader = new FileReader();
+
+						// 파일 확장자 및 크기 체크
+						let validExtensions = ["jpg", "jpeg", "exif"];
+						let fileSizeMB = file.size / (1024 * 1024);
+						let fileExtension = file.name.split(".").pop().toLowerCase();
+
+						if (!validExtensions.includes(fileExtension)) {
+							alert("허용된 이미지 파일 형식은 JPG, EXIF입니다.");
+							continue;
+						}
+						if (fileSizeMB > 1) {
+							alert("각 파일 크기는 최대 1MB까지 가능합니다.");
+							continue;
+						}
+
+						let promise = new Promise((resolve, reject) => {
+							reader.onload = function (event) {
+								fileList.push({
+									"fileNo": (i + 1).toString(), // 파일 번호 (1부터 시작)
+									"fileName": file.name, // 파일 이름
+									"file": event.target.result.split(",")[1] // Base64 데이터 (prefix 제거)
+								});
+								resolve();
+							};
+							reader.onerror = reject;
+						});
+						reader.readAsDataURL(file); // 파일을 Base64로 변환
+						fileReaderPromises.push(promise);
+					}
+				}
+			}
+
+			// 수신자 리스트 가져오기
+			let recipients = [
+				{
+					receiveNum: $("#contactPhone").text().trim(),
+					customMessageId: "msg_001",
+					param: {"name": $("#contactName").text().trim(), "event": "봄맞이 할인"}
+				}
+			];
+
+			// receiveList 동적 생성
+			let receiveList = recipients.map(recipient => ({
+				receiveNum: recipient.receiveNum,
+				customMessageId: recipient.customMessageId || null,
+				param: recipient.param || {}
+			}));
+
+			// 파일이 있을 경우 비동기 처리, 없으면 바로 AJAX 실행
+			let sendRequest = () => {
+				// 요청 데이터 구성
+				let requestData = {
+					MessageSubType: 1,
+					agentCode: null,
+					notificationTags: null,
+					reserveTime: reserveTime, // 예약 전송
+					expireTime: null,
+					receiveExcel: null,
+					receiveList: receiveList.length > 0 ? receiveList : null,
+					templateId: null,
+					messageInfo: {
+						msgKind: msgKind,
+						content: content,
+						callbackNum: callbackNum,
+						kisaOrigCode: "123456789",
+						unsubscribeNum: unsubscribeNum
+					}
+				};
+
+				if (channel != "SMS") {
+					requestData.messageInfo.channel = channel;
+					requestData.messageInfo.subject = smssubject;
+					if (channel === "MMS" && fileList.length > 0) {
+						requestData.messageInfo.fileList = fileList;
+					}
+				}
+
+				$.ajax({
+					url: "/index/send",
+					type: "POST",
+					contentType: "application/json",
+					data: JSON.stringify(requestData),
+					success: function () {
+						alert("메시지 전송 성공");
+					},
+					error: function () {
+						alert("전송 실패");
+					}
+				});
+			};
+
+			// 파일 변환이 필요하면 처리 후 요청, 아니면 바로 요청 실행
+			if (fileReaderPromises.length > 0) {
+				Promise.all(fileReaderPromises).then(sendRequest).catch(error => {
+					console.error("파일 읽기 중 오류 발생:", error);
+				});
+			} else {
+				sendRequest();
+			}
+		}
+
+	</script>
+
+</head>
+
+<body>
+	<main class="main con_in p-sm-4 p-2 w-auto">
+		<div
+			class="position-fixed start-0 top-0 bg-white shadow side_menu text-center d-flex flex-wrap align-items-start py-2 justify-content-between">
+			<div class="top_menu d-flex flex-wrap justify-content-between w-100">
+				<button type="button" class="btn active circle mx-auto"><i class="fas fa-users"></i></button>
+				<button type="button" class="btn circle mt-2 mx-auto"><i class="fas fa-phone-alt"></i></button>
+			</div>
+			<div class="bottom_menu mt-auto d-flex flex-wrap justify-content-between w-100">
+				<button type="button" name="logout" id="logout" class="btn mt-auto circle mx-auto"><i
+						class="fas fa-cog"></i></button>
+			</div>
+
+		</div>
+		<div class="row g-0 mt-0 w-100 flex-lg-nowrap me-0 h-100">
+			<div class="col-xxl-3 col-lg-4 col-12 mb-lg-0 flex-fill con1">
+				<div class="card h-100 position-relative login_card p-sm-4 p-2">
+					<h3 class="strong my-3">77276940님<span>(070-7727-6940)<span></h3>
+					<div class="search_form">
+						<div class="d-flex align-items-center mb-3">
+							<label class="strong mb-0 pe-1">연락처</label>
+							<select class="form-select ms-2 w-auto py-1 shadow">
+								<option>즐겨찾기 순</option>
+								<option>이름순</option>
+								<option>그룹순</option>
+								<option>최신 통화 순</option>
+								<option>여러 건 통화 순</option>
+							</select>
+							<button type="button" class="btn btn-default rounded py-1 px-3 ms-auto bg-white shadow"><i
+									class="fas fa-user-plus"></i></button>
+						</div>
+						<div class="input-group mb-3">
+							<select class="form-select">
+								<option>전화번호</option>
+								<option>이름</option>
+								<option>그룹명</option>
+							</select>
+							<input type="text" class="form-control" aria-label="컨텐츠1 검색 인풋">
+							<div class="input-right">
+								<button class="btn btn-primary circle" type="button" id="con1_search_btn"><i
+										class="fas fa-search"></i></button>
+							</div>
+						</div>
+
+					</div>
+					<div class="list-group list-group-numbered mb-3">
+						<ul class="list-group-wrap">
+							<li th:each="contact : ${contacts}"
+								class="btn list-group-item flex-wrap d-flex justify-content-between align-items-start d-flex mb-3 border-0 shadow rounded-list align-items-center"
+								th:onclick="|selectContact(this)|">
+								<div class="list_profile">
+									<img class="circle" src="../assets/img/user_profile.png" alt="프로필 이미지" />
+								</div>
+								<div class="ms-2 me-auto text-start">
+									<div class="fw-bold">
+										<span th:text="${contact.name}"></span>
+										<span th:text="'(' + ${contact.company} + ')'"></span>
+									</div>
+									<p class="mb-0">
+										<span th:text="${contact.phone_number}"></span>
+										<button type="button" class="btn-icon text-muted local">
+											<i class="fas fa-map-marker-alt"></i>
+										</button>
+									</p>
+									<small class="text-muted" th:text="${contact.last_call ?: '최근 통화 없음'}"></small>
+								</div>
+								<div class="list-btn-group text-end ms-auto">
+									<small class="text-muted d-block" th:text="${contact.updated_at}"></small>
+									<ul class="d-flex p-0 m-0 justify-content-end">
+										<li>
+											<button type="button" class="btn-icon text-muted">
+												<i class="fas fa-comments"></i>
+											</button>
+											<span class="badge bg-danger rounded-pill"
+												th:text="${contact.msg_count ?: 0}"></span>
+										</li>
+										<li>
+											<button type="button" class="btn-icon text-muted">
+												<i class="fas fa-envelope"></i>
+											</button>
+											<span class="badge bg-danger rounded-pill"
+												th:text="${contact.email_count ?: 0}"></span>
+										</li>
+										<li>
+											<button type="button" class="btn-icon text-muted">
+												<i class="fas fa-phone-alt"></i>
+											</button>
+											<span class="badge bg-danger rounded-pill"
+												th:text="${contact.call_count ?: 0}"></span>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+			<div class="col-xxl-3 col-lg-4 col-12 ms-lg-4 ms-0 flex-fill mt-2 mt-sm-3 mt-lg-0 con2"
+				style="display: none;" id="contactCard">
+				<div class="card h-100 position-relative login_card p-sm-4 p-2">
+					<div class="con-head">
+						<h4 class="strong mt-3">
+							<span id="contactName"></span>
+							<span id="contactCompany">()</span>
+						</h4>
+						<p id="contactPhone"></p>
+					</div>
+					<ul class="nav nav-pills shadow mb-3 rounded tab_btn_wrap" id="pills-tab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="pills-list-tab" data-bs-toggle="pill"
+								data-bs-target="#list_con" type="button" role="tab" aria-controls="list_con"
+								aria-selected="true"><i class="fas fa-history"></i></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="pills-sms-tab" data-bs-toggle="pill" data-bs-target="#sms_con"
+								type="button" role="tab" aria-controls="sms_con" aria-selected="false"><i
+									class="fas fa-sms"></i></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="pills-chat-tab" data-bs-toggle="pill"
+								data-bs-target="#chat_con" type="button" role="tab" aria-controls="chat_con"
+								aria-selected="false"><i class="fas fa-comments"></i></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="pills-chatbot-tab" data-bs-toggle="pill"
+								data-bs-target="#chatbot_con" type="button" role="tab" aria-controls="chatbot_con"
+								aria-selected="false"><i class="fas fa-robot"></i></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="pills-setting-tab" data-bs-toggle="pill"
+								data-bs-target="#setting_con" type="button" role="tab" aria-controls="setting_con"
+								aria-selected="false"><i class="fas fa-cogs"></i></button>
+						</li>
+					</ul>
+					<div class="tab-content mt-2" id="pills-tabContent">
+
+						<div class="tab-pane fade show active" id="list_con" role="tabpanel"
+							aria-labelledby="pills-list-tab" tabindex="0">
+							<div class="d-flex action_btn w-100 mb-3">
+								<button class="btn shadow btn-primary mx-auto" type="button"><i
+										class="bi bi-telephone-forward-fill"></i></button>
+							</div>
+							<div class="list-search-form">
+								<form class="mb-3">
+									<div class="d-flex flex-wrap mb-2">
+										<div class="col-sm-6 col-12 pe-sm-2 pe-0">
+											<label class="form-label mb-1">통화구분</label>
+											<select class="form-select shadow">
+												<option>전체</option>
+											</select>
+										</div>
+										<div class="col-sm-6 col-12 ps-0 ps-sm-2">
+											<label class="form-label mb-1">상담상태</label>
+											<select class="form-select shadow">
+												<option>전체</option>
+												<option>접수</option>
+												<option>보류</option>
+												<option>상담완료</option>
+											</select>
+										</div>
+									</div>
+									<div class="d-flex flex-wrap mb-2">
+										<label class="form-label mb-1">상담일시</label>
+										<div class="col-12 d-flex flex-wrap flex-sm-nowrap">
+
+											<div class="col-sm-6 col-12 pe-sm-2 pe-0">
+												<input class="form-control shadow" type="date" />
+											</div>
+											<div class="col-sm-6 col-12 ps-0 ps-sm-2">
+												<input class="form-control shadow" type="date" />
+											</div>
+
+										</div>
+									</div>
+									<div class="d-flex flex-wrap mb-3">
+										<div class="col-12">
+											<label class="form-label mb-1">상담유형</label>
+											<select class="form-select shadow">
+												<option>전체</option>
+												<option>발신</option>
+												<option>착신</option>
+												<option>발신 부재중</option>
+												<option>착신 부재중</option>
+												<option>콜백</option>
+											</select>
+										</div>
+									</div>
+									<div class="d-flex justify-content-center w-100 align-items-center">
+										<button class="btn btn-primary" type="button" style="width: 100px;">조회</button>
+									</div>
+
+								</form>
+								<div class="table-history">
+
+									<div class="table-responsive">
+										<table class="table text-center">
+											<thead>
+												<tr>
+													<th scope="col">통화구분</th>
+													<th scope="col">통화일시</th>
+													<th scope="col">통화시간</th>
+													<th scope="col">콜백</th>
+													<th scope="col">상담상태</th>
+													<th scope="col">상담유형</th>
+													<th scope="col">상담내용</th>
+												</tr>
+											</thead>
+											<tbody class="table-group-divider">
+												<tr>
+													<td>착신부재</td>
+													<td>2024-11-21 <br>14:21:45</td>
+													<td>03:05</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+												</tr>
+												<tr>
+													<td>착신부재</td>
+													<td>2024-11-21 <br>14:21:45</td>
+													<td>03:05</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+												</tr>
+												<tr>
+													<td>착신부재</td>
+													<td>2024-11-21 <br>14:21:45</td>
+													<td>03:05</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+													<td>-</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									<nav aria-label="table pagination" class="w-100 d-flex justify-content-center">
+										<ul class="pagination">
+											<li class="page-item disabled">
+												<span class="page-link"><i class="bi bi-chevron-left"></i>Prev</span>
+											</li>
+											<li class="page-item"><a class="page-link" href="#">1</a></li>
+											<li class="page-item active" aria-current="page">
+												<span class="page-link">2</span>
+											</li>
+											<li class="page-item"><a class="page-link" href="#">3</a></li>
+											<li class="page-item">
+												<a class="page-link" href="#">Next<i
+														class="bi bi-chevron-right"></i></a>
+											</li>
+										</ul>
+									</nav>
+								</div>
+
+							</div>
+						</div>
+						<div class="tab-pane fade" id="sms_con" role="tabpanel" aria-labelledby="pills-sms-tab"
+							tabindex="0">
+							<div class="d-flex action_btn w-100 mb-3">
+								<button class="btn shadow btn-primary mx-auto" type="button" onclick="sendMsg()">
+									<i class="fas fa-paper-plane"></i>
+								</button>
+							</div>
+
+							<!-- 메시지 유형 선택 -->
+							<div class="form-group mb-3">
+								<label for="channel">메시지 유형</label>
+								<select class="form-select shadow" id="channel" name="channel"
+									onchange="toggleFileInput()">
+									<option value="SMS">SMS</option>
+									<option value="LMS">LMS</option>
+									<option value="MMS">MMS</option>
+								</select>
+							</div>
+
+							<!-- 광고성/정보성 선택 -->
+							<div class="form-group mb-3">
+								<label for="msgKind">메시지 성격</label>
+								<select class="form-select shadow" id="msgKind" name="msgKind">
+									<option value="I">정보성</option>
+									<option value="A">광고성</option>
+								</select>
+							</div>
+
+							<!-- 제목 (LMS/MMS 전용) -->
+							<div class="form-group mb-3" id="subjectField" style="display: none;">
+								<label for="subject">제목 (LMS/MMS 전용)</label>
+								<input class="form-control shadow" type="text" id="smssubject" name="smssubject">
+							</div>
+
+							<!-- 예약 전송 -->
+							<div class="form-group mb-3">
+								<div class="d-flex flex-wrap">
+									<div class="form-check mb-2">
+										<input class="form-check-input" type="checkbox" id="flexCheckDefault">
+										<label class="form-check-label" for="flexCheckDefault"
+											onclick="currentdatetime()">
+											예약전송
+										</label>
+									</div>
+									<input class="form-control shadow" type="datetime-local" id="currentdatetime"
+										name="currentdatetime">
+								</div>
+							</div>
+
+							<!-- 메시지 내용 -->
+							<div class="form-group mb-3">
+								<label for="sms">메시지 내용</label>
+								<textarea class="form-control shadow" rows="6" id="content" name="content"></textarea>
+							</div>
+
+							<!-- 첨부파일 (MMS 전용) -->
+							<div class="form-group mb-3" id="fileInput" style="display: none;">
+								<label for="smsfile">첨부파일 (MMS 전용, 최대 3개)</label>
+								<input class="form-control shadow" type="file" id="smsfile" name="smsfile" multiple
+									accept=".jpg">
+							</div>
+						</div>
+						<div class="tab-pane fade" id="chat_con" role="tabpanel" aria-labelledby="pills-chat-tab"
+							tabindex="0">
+							<div class="chatter rounded shadow">
+
+								<div class="chatter_pre_signup">
+									<input type="text" name="chatter_name" placeholder="Your name"
+										class="chatter_field chatter_name" />
+									<input type="text" name="chatter_email" placeholder="Your email address"
+										class="chatter_field chatter_email" />
+									<input type="submit" name="chatter_create_user" value="Start Chatting"
+										class="chatter_btn chatter_create_user" />
+								</div>
+
+								<div class="chatter_post_signup">
+									<div class="chatter_convo">
+										<div class="w-100 d-flex">
+											<span class="chatter_msg_item chatter_msg_item_admin">
+												<a href="#" class="chatter_avatar"><img
+														src="../assets/img/user_profile.png" /></a>
+												<strong class="chatter_name">Luke Peters</strong>Hello!
+											</span>
+										</div>
+										<span class="chatter_msg_item chatter_msg_item_user">
+											<strong class="chatter_name">Jack Sparrow</strong>Oh hello. Who is
+											this?</span>
+
+										<div class="w-100 d-flex">
+											<span class="chatter_msg_item chatter_msg_item_admin">
+												<a href="#" class="chatter_avatar"><img
+														src="../assets/img/user_profile.png" /></a>
+												<strong class="chatter_name">Luke Peters</strong>My name is Luke.
+												How
+												can I help you today? :)
+											</span>
+										</div>
+										<span class="chatter_msg_item chatter_msg_item_user">
+											<strong class="chatter_name">Jack Sparrow</strong>Just saying
+											hello!</span>
+
+										<div class="w-100 d-flex">
+											<span class="chatter_msg_item chatter_msg_item_admin">
+												<a href="#" class="chatter_avatar"><img
+														src="../assets/img/user_profile.png" /></a>
+												<strong class="chatter_name">Luke Peters</strong>Oh alright, Hello
+												then
+												Jack, you pirate, you.
+											</span>
+										</div>
+										<span class="chatter_msg_item chatter_msg_item_user">
+											<strong class="chatter_name">Jack Sparrow</strong>Oh hello. Who is
+											this?</span>
+
+
+										<div class="w-100 d-flex">
+											<span class="chatter_msg_item chatter_msg_item_admin">
+												<a href="#" class="chatter_avatar"><img
+														src="../assets/img/user_profile.png" /></a>
+												<strong class="chatter_name">Luke Peters</strong>My name is Luke.
+												How
+												can I help you today? :)
+											</span>
+										</div>
+
+										<span class="chatter_msg_item chatter_msg_item_user">
+											<strong class="chatter_name">Jack Sparrow</strong>Just saying
+											hello!</span>
+
+
+										<div class="w-100 d-flex">
+											<span class="chatter_msg_item chatter_msg_item_admin">
+												<a href="#" class="chatter_avatar"><img
+														src="../assets/img/user_profile.png" /></a>
+												<strong class="chatter_name">Luke Peters</strong>Oh alright, Hello
+												then
+												Jack, you pirate, you.
+											</span>
+										</div>
+									</div>
+
+									<div class="write d-flex mt-3">
+										<button class="btn attach write-link border-0  mx-1" type="button"><i
+												class="fas fa-paperclip"></i></button>
+										<textarea id="autoResizeTextarea" class="chat_input form-control" rows="1"
+											oninput="autoResize(this)"></textarea>
+										<button class="btn smiley write-link border-0 mx-1" type="button"><i
+												class="far fa-laugh"></i></button>
+										<button class="btn send write-link border-0 me-1" type="button"><i
+												class="fas fa-paper-plane"></i></button>
+									</div>
+
+								</div>
+
+							</div>
+
+
+
+						</div>
+						<div class="tab-pane fade" id="chatbot_con" role="tabpanel" aria-labelledby="pills-chatbot-tab"
+							tabindex="0">...</div>
+						<div class="tab-pane fade" id="setting_con" role="tabpanel" aria-labelledby="pills-setting-tab"
+							tabindex="0">...</div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="col-xxl-6 col-lg-4 col-12 ms-lg-4 ms-0 flex-fill d-none d-lg-block">
+				<div class="card p-4 h-100 empty_con position-relative">
+					<img class="m-auto kt_crm_bg" src="../assets/img/crm_con_bg.png" alt="KT CRM 백그라운드 이미지">
+					<div class="kt_crm_logo p-4 position-absolute end-0 bottom-0"><img class="m-auto"
+							src="../assets/img/logo.png" alt="KT crm 로고"></div>
+				</div>
+			</div>
+
+		</div>
+	</main>
+
+</body>
+
+</html>
