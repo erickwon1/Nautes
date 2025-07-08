@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>SIP 전화걸기</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sip.js@0.20.0/dist/sip.min.js"></script>
+	<style>
+		body {
+			background-color: #f7f9fc;
+		}
+
+		.container {
+			max-width: 500px;
+			margin-top: 100px;
+		}
+
+		.status-box {
+			height: 40px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container border rounded p-4 shadow bg-white">
+		<h3 class="text-center mb-4">📞 내선 번호 전화걸기</h3>
+
+		<div class="mb-3">
+			<label for="extensionInput" class="form-label">내선 번호 입력</label>
+			<input type="text" class="form-control" id="extensionInput" placeholder="예: 8888">
+		</div>
+
+		<div class="d-grid mb-3">
+			<button class="btn btn-primary" onclick="makeCall()">전화 걸기</button>
+		</div>
+
+		<div id="callStatus" class="alert alert-secondary text-center status-box" role="alert">
+			대기 중...
+		</div>
+	</div>
+
+	<script>
+		const userAgent = new SIP.UA({
+			uri: 'sip:8887@192.168.1.96',
+			authorizationUsername: '8887',
+			authorizationPassword: '88871!',
+			sessionDescriptionHandlerFactoryOptions: {
+				constraints: {
+					audio: true,
+					video: false
+				}
+			},
+			transportOptions: {
+				host: '192.168.1.96',
+				port: 5060,
+				transport: 'udp'
+			}
+		});
+		userAgent.start();
+
+
+		function makeCall() {
+			const extension = $('#extensionInput').val().trim();
+			if (!extension) {
+				$('#callStatus').text('❌ 내선 번호를 입력하세요.');
+				return;
+			}
+
+			navigator.mediaDevices.getUserMedia({audio: true}).then(() => {
+				$('#callStatus').text('🔍 내선 번호 확인 중...');
+
+				$.get("/sip/list", function (data) {
+					const account = data.find(acc => acc.extension === extension);
+					if (!account) {
+						$('#callStatus').text('❌ 존재하지 않는 내선 번호입니다.');
+						return;
+					}
+
+					$('#callStatus').text(`📞 ${extension}로 전화 거는 중...`);
+
+					const targetURI = `sip:${extension}@192.168.1.96`;
+					const session = new SIP.Inviter(userAgent, targetURI);
+
+					session.invite().then(() => {
+						$('#callStatus').text(`✅ ${extension} 통화 연결 시도 중...`);
+					}).catch(err => {
+						console.error(err);
+						$('#callStatus').text('❌ 전화 연결에 실패했습니다.');
+					});
+
+				}).fail(() => {
+					$('#callStatus').text('❌ 서버 응답 실패');
+				});
+
+			}).catch(() => {
+				$('#callStatus').text('❌ 마이크 권한이 필요합니다.');
+			});
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>사내 SIP폰</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sip.js/0.20.0/sip.min.js"></script>
+</head>
+
+<body>
+	<h2>사내 SIP 폰</h2>
+	<p>내선 번호: <span id="my-ext"></span></p>
+	<input type="text" id="targetExt" placeholder="내선 번호 입력">
+	<button onclick="call()">전화 걸기</button>
+
+	<script>
+		const username = [[${account.username}]];
+		const password = [[${account.password}]];
+		const extension = [[${account.extension}]];
+		document.getElementById("my-ext").innerText = extension;
+
+		const userAgent = new SIP.UA({
+			uri: `sip:${username}@yourdomain.com`,
+			transportOptions: {
+				wsServers: ['wss://yourdomain.com:8089/ws']
+			},
+			authorizationUser: username,
+			password: password,
+			sessionDescriptionHandlerFactoryOptions: {
+				constraints: {audio: true, video: false},
+				peerConnectionOptions: {
+					rtcConfiguration: {
+						iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
+					}
+				}
+			}
+		});
+
+		userAgent.on('invite', session => {
+			session.accept();
+		});
+
+		function call() {
+			const target = document.getElementById('targetExt').value;
+			userAgent.invite(`sip:${target}@yourdomain.com`);
+		}
+	</script>
+</body>
+
+</html>

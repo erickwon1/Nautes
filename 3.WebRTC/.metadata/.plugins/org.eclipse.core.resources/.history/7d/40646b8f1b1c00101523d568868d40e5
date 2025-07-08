@@ -1,0 +1,31 @@
+// SipAccountController.java
+package com.nautestech.www.controller;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nautestech.www.model.SipAccount;
+import com.nautestech.www.service.SipAccountService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/sip")
+public class SipAccountController {
+
+	private final SipAccountService sipAccountService;
+
+	@GetMapping("/")
+	public String sipPage() {
+		return "/sip";
+	}
+
+	@GetMapping("/list")
+	public List<SipAccount> getSipList() {
+		return sipAccountService.getAllAccounts();
+	}
+}

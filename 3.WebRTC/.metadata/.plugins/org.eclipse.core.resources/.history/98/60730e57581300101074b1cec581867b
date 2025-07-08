@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>WebRTC 음성 통화</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+	<div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl flex flex-col items-center space-y-4">
+
+		<h2 class="text-2xl font-bold">🎤 음성 통화</h2>
+
+		<!-- 상태 표시 -->
+		<div id="status" class="text-sm text-gray-600">상태: 연결 대기 중...</div>
+
+		<!-- 버튼 영역 -->
+		<div class="flex flex-col space-y-3 w-full">
+			<button id="startBtn" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl">🎤 마이크
+				켜기</button>
+			<button id="callBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl">Call</button>
+			<button id="hangupBtn" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Hang
+				Up</button>
+			<button id="toggleMic" class="w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-xl">🎤 마이크 끄기</button>
+		</div>
+
+		<!-- 오디오 요소 (숨김) -->
+		<audio id="remoteAudio" autoplay class="hidden"></audio>
+	</div>
+
+	<script>
+		// 여기에 WebRTC 로직과 마이크 토글 기능을 추가할 예정
+	</script>
+</body>
+
+</html>

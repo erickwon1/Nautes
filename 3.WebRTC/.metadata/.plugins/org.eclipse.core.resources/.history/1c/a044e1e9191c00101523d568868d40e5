@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>사내 SIP폰</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sip.js/0.20.0/sip.min.js"></script>
+</head>
+
+<body>
+	<h2>사내 SIP 폰</h2>
+	<p>내선 번호: <span id="my-ext"></span></p>
+	<input type="text" id="targetExt" placeholder="내선 번호 입력">
+	<button onclick="call()">전화 걸기</button>
+
+	<script>
+		// Thymeleaf 또는 Spring에서 서버에서 값을 바인딩해줄 경우
+		const username = /*[[${account.username}]]*/ '1001'; // 예시 값
+		const password = /*[[${account.password}]]*/ 'your_pw';
+		const extension = /*[[${account.extension}]]*/ '1001';
+
+		document.getElementById("my-ext").innerText = extension;
+
+		const userAgent = new SIP.UA({
+			uri: `sip:${username}@192.168.2.121`,
+			transportOptions: {
+				wsServers: ['ws://192.168.2.121/signal'], // 기존 주소 적용
+				traceSip: true
+			},
+			authorizationUser: username,
+			password: password,
+			sessionDescriptionHandlerFactoryOptions: {
+				constraints: {audio: true, video: false},
+				peerConnectionOptions: {
+					rtcConfiguration: {
+						iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
+					}
+				}
+			}
+		});
+
+		userAgent.on('invite', session => {
+			session.accept();
+		});
+
+		function call() {
+			const target = document.getElementById('targetExt').value;
+			userAgent.invite(`sip:${target}@192.168.2.121`, {
+				sessionDescriptionHandlerOptions: {
+					constraints: {audio: true, video: false}
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

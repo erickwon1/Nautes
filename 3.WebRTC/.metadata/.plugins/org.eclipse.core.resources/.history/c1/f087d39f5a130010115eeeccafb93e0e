@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>WebRTC 음성 통화</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+	<div class="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl flex flex-col items-center space-y-4">
+
+		<h2 class="text-2xl font-bold">🎙️ 음성 통화</h2>
+
+		<!-- 상태 표시 -->
+		<div id="status" class="text-sm text-gray-600">상태: 연결 대기 중...</div>
+
+		<!-- 버튼 영역 -->
+		<div class="flex flex-col space-y-3 w-full">
+			<button id="startBtn"
+				class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl">Start</button>
+			<button id="callBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl">Call</button>
+			<button id="hangupBtn" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Hang
+				Up</button>
+			<button id="toggleMic" class="w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-xl">🎙️ 마이크 끊기</button>
+		</div>
+
+		<!-- 오디오 요소 (숨기기) -->
+		<audio id="remoteAudio" autoplay class="hidden"></audio>
+	</div>
+
+	<script>
+		let localStream;
+		let peerConnection;
+		let isMicMuted = false;
+
+		const startBtn = document.getElementById('startBtn');
+		const callBtn = document.getElementById('callBtn');
+		const hangupBtn = document.getElementById('hangupBtn');
+		const toggleMicBtn = document.getElementById('toggleMic');
+		const remoteAudio = document.getElementById('remoteAudio');
+		const status = document.getElementById('status');
+
+		const signaling = new WebSocket('wss://your-signaling-server-url'); // 사용자 특정 WebSocket URL
+
+		signaling.onmessage = async (message) => {
+			const data = JSON.parse(message.data);
+
+			if (data.offer) {
+				await createPeerConnection();
+				await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+				const answer = await peerConnection.createAnswer();
+				await peerConnection.setLocalDescription(answer);
+				signaling.send(JSON.stringify({answer}));
+				status.textContent = '상태: 상대방의 요청에 응답함';
+			} else if (data.answer) {
+				await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+				status.textContent = '상태: 연결 완료';
+			} else if (data.candidate) {
+				try {
+					await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+				} catch (e) {
+					console.error('ICE candidate 추가 오류', e);
+				}
+			}
+		};
+
+		async function createPeerConnection() {
+			peerConnection = new RTCPeerConnection();
+
+			peerConnection.onicecandidate = event => {
+				if (event.candidate) {
+					signaling.send(JSON.stringify({candidate: event.candidate}));
+				}
+			};
+
+			peerConnection.ontrack = event => {
+				remoteAudio.srcObject = event.streams[0];
+			};
+
+			localStream.getTracks().forEach(track => {
+				peerConnection.addTrack(track, localStream);
+			});
+		}
+
+		startBtn.onclick = async () => {
+			try {
+				localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+				status.textContent = '상태: 마이크 활성화됨';
+			} catch (e) {
+				console.error('오디오 접근 오류:', e);
+				status.textContent = '상태: 마이크 접근 실패';
+			}
+		};
+
+		callBtn.onclick = async () => {
+			await createPeerConnection();
+			const offer = await peerConnection.createOffer();
+			await peerConnection.setLocalDescription(offer);
+			signaling.send(JSON.stringify({offer}));
+			status.textContent = '상태: 연결 요청 보냄';
+		};
+
+		hangupBtn.onclick = () => {
+			if (peerConnection) {
+				peerConnection.close();
+				peerConnection = null;
+			}
+			status.textContent = '상태: 통화 종료됨';
+		};
+
+		toggleMicBtn.onclick = () => {
+			if (!localStream) return;
+			const audioTrack = localStream.getAudioTracks()[0];
+			isMicMuted = !isMicMuted;
+			audioTrack.enabled = !isMicMuted;
+			toggleMicBtn.textContent = isMicMuted ? '🎤 마이크 켜기' : '🎤 마이크 끄기';
+		};
+		const peerConnection = new RTCPeerConnection({
+			iceServers: [
+				{urls: "stun:stun.l.google.com:19302"}
+			]
+		});
+
+	</script>
+</body>
+
+</html>

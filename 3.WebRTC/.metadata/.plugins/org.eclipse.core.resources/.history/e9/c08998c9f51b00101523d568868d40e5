@@ -1,0 +1,27 @@
+package com.nautestech.www.controller;
+
+import com.nautestech.www.domain.SipAccount;
+import com.nautestech.www.service.SipAccountService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+@RequestMapping("/phone")
+public class PhoneController {
+
+	private final SipAccountService sipAccountService;
+
+	@Autowired
+	public PhoneController(SipAccountService sipAccountService) {
+		this.sipAccountService = sipAccountService;
+	}
+
+	@GetMapping
+	public String phonePage(@RequestParam(name = "username") String username, Model model) {
+		SipAccount account = sipAccountService.getAccountByUsername(username);
+		model.addAttribute("account", account);
+		return "phone"; // phone.html을 의미 (Thymeleaf로 연결 시 templates로 변경 가능)
+	}
+}

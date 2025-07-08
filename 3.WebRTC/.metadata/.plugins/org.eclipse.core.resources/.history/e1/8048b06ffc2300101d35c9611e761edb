@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>SIP 전화걸기</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sip.js@0.15.0/dist/sip.js"></script>
+	<script>
+		let userAgent;
+
+		function createUserAgent() {
+			userAgent = new SIP.UA({
+				uri: 'sip:8887@192.168.1.96',  // SIP 서버와 계정 URI
+				transportOptions: {
+					wsServers: ['ws://192.168.1.96:5066/ws'], // WebSocket 서버 주소
+					traceSip: true // SIP 메시지 추적
+				},
+				authorizationUser: '8887', // 사용자 인증 정보
+				password: '88871!', // 비밀번호
+				sessionDescriptionHandlerFactoryOptions: {
+					constraints: {
+						audio: true, // 오디오 사용
+						video: false // 영상 사용 안 함
+					},
+					peerConnectionOptions: {
+						rtcConfiguration: {
+							iceServers: []
+						}
+					},
+					modifiers: [
+					  function removeUnsupportedCodecs(description) {
+					    const codecsToRemove = ['111', '63', '126', '110', '13', '8', '0', '9']; // 추가된 코덱들
+
+					    // m=audio 줄 수정 (코덱만 제거, 포트와 전송 프로토콜은 그대로)
+					    description.sdp = description.sdp.replace(/^m=audio .*\r$/gm, (line) => {
+					      const parts = line.split(' ');
+
+					      // 필수 항목(포트 번호, 전송 프로토콜)은 그대로 두고, 나머지 코덱만 필터링
+					      const filteredParts = parts.filter((part, index) => {
+					        // 첫 세 번째 항목(포트 번호, 전송 프로토콜)은 그대로 두고, 나머지 코덱은 필터링
+					        return index < 3 || !codecsToRemove.includes(part);
+					      });
+
+					      // 수정된 라인 반환
+					      return filteredParts.join(' ') + '\r';
+					    });
+
+					    // rtpmap / fmtp 삭제
+					    description.sdp = description.sdp
+					      .split('\r\n')
+					      .filter((line) => {
+					        return !codecsToRemove.some((pt) => line.includes(`a=rtpmap:${pt}`) || line.includes(`a=fmtp:${pt}`));
+					      })
+					      .join('\r\n');
+
+					    // 최종 수정된 SDP를 로그로 출력하여 확인
+					    console.log("Modified SDP:", description.sdp);
+
+					    return Promise.resolve(description);
+					  }
+					]
+
+				}
+			});
+
+			userAgent.on('registered', () => {
+				console.log("✅ REGISTER 성공");
+			});
+
+			userAgent.on('registrationFailed', (err) => {
+				console.error("❌ REGISTER 실패", err);
+			});
+
+		}
+
+		async function makeCall() {
+			const extension = $('#extensionInput').val().trim();
+			if (!extension) {
+				$('#callStatus').text('❌ 내선 번호를 입력하세요.');
+				return;
+			}
+
+			try {
+				await navigator.mediaDevices.getUserMedia({audio: true}); // 마이크 권한 요청
+
+				$('#callStatus').text('📞 전화 준비 중...');
+
+				if (!userAgent) {
+					createUserAgent(); // User Agent가 생성되지 않았다면 생성
+				}
+
+				const targetURI = `sip:${extension}@192.168.1.96`; // 전화 걸 대상
+				const session = userAgent.invite(targetURI, {
+					media: {
+						constraints: {audio: true, video: false}
+					}
+				});
+
+				// 콜백 처리 (전화 상태에 따른 UI 업데이트)
+				session.on('accepted', () => {
+					$('#callStatus').text('✅ 통화 연결됨');
+				});
+
+				session.on('bye', () => {
+					$('#callStatus').text('📴 통화 종료됨');
+				});
+
+				session.on('failed', () => {
+					$('#callStatus').text('❌ 전화 실패');
+				});
+
+				session.on('started', () => {
+					$('#callStatus').text(`📞 ${extension}로 전화 거는 중...`);
+				});
+
+			} catch (err) {
+				console.error(err);
+				$('#callStatus').text('❌ 오류 발생: ' + err.message);
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<div class="container border rounded p-4 shadow bg-white">
+		<h3 class="text-center mb-4">📞 내선 번호 전화걸기</h3>
+
+		<div class="mb-3">
+			<label for="extensionInput" class="form-label">내선 번호 입력</label>
+			<input type="text" class="form-control" id="extensionInput" placeholder="예: 8888">
+		</div>
+
+		<div class="d-grid mb-3">
+			<button class="btn btn-primary" onclick="makeCall()">전화 걸기</button>
+		</div>
+
+		<div id="callStatus" class="alert alert-secondary text-center status-box" role="alert">
+			대기 중...
+		</div>
+	</div>
+</body>
+
+</html>

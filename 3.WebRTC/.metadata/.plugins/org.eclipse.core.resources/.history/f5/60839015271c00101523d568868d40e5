@@ -1,0 +1,57 @@
+<script src="https://cdn.jsdelivr.net/npm/sip.js-simple@0.20.0/dist/sip.simple.min.js"></script>
+<script>
+	let simpleUser;
+
+	async function makeCall() {
+		const extension = $('#extensionInput').val().trim();
+		if (!extension) {
+			$('#callStatus').text('❌ 내선 번호를 입력하세요.');
+			return;
+		}
+
+		try {
+			await navigator.mediaDevices.getUserMedia({audio: true});
+
+			$('#callStatus').text('🔍 내선 번호 확인 중...');
+
+			$.get("/sip/list", async function (data) {
+				const account = data.find(acc => acc.extension === extension);
+				if (!account) {
+					$('#callStatus').text('❌ 존재하지 않는 내선 번호입니다.');
+					return;
+				}
+
+				const target = `sip:${extension}@192.168.1.96`;
+
+				// SIP.SimpleUser로 변경
+				simpleUser = new SIP.SimpleUser("ws://192.168.1.96:8088/ws", {
+					aor: "sip:8887@192.168.1.96",
+					userAgentOptions: {
+						authorizationUsername: "8887",
+						authorizationPassword: "88871!"
+					},
+					media: {
+						constraints: {audio: true, video: false}
+					}
+				});
+
+				simpleUser.delegate = {
+					onCallAnswered: () => $('#callStatus').text('✅ 통화 연결됨'),
+					onCallHangup: () => $('#callStatus').text('📴 통화 종료됨'),
+					onCallCreated: () => $('#callStatus').text(`📞 ${extension}로 전화 거는 중...`),
+					onCallFailed: () => $('#callStatus').text('❌ 통화 실패')
+				};
+
+				await simpleUser.connect();
+				await simpleUser.call(target);
+
+			}).fail(() => {
+				$('#callStatus').text('❌ 서버 응답 실패');
+			});
+
+		} catch (err) {
+			console.error(err);
+			$('#callStatus').text('❌ 마이크 권한이 필요합니다.');
+		}
+	}
+</script>

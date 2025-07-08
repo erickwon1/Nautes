@@ -1,0 +1,5 @@
+package com.nautestech.www.domain;
+
+public class SipAccount {
+
+}

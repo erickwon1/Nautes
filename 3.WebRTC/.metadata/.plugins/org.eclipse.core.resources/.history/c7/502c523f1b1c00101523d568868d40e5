@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>SIP 전화걸기</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="sip-0.20.0.js"></script>
+</head>
+
+<body>
+	<h3>내선 번호 입력 또는 선택</h3>
+
+	<input type="text" id="extensionInput" placeholder="내선 번호 입력">
+	<select id="extensionSelect">
+		<option value="">-- 내선 선택 --</option>
+	</select>
+	<button onclick="makeCall()">전화 걸기</button>
+
+	<script>
+		const userAgent = new SIP.UserAgent({
+			uri: 'sip:8887@192.168.2.121',
+			transportOptions: {
+				server: 'ws://192.168.2.121/signal'
+			},
+			authorizationUsername: '8887',
+			authorizationPassword: '88871!'
+		});
+
+		userAgent.start();
+
+		function makeCall() {
+			const input = document.getElementById('extensionInput').value;
+			const select = document.getElementById('extensionSelect').value;
+			const targetExtension = input || select;
+
+			if (!targetExtension) {
+				alert("내선 번호를 입력하거나 선택하세요.");
+				return;
+			}
+
+			const targetURI = `sip:${targetExtension}@192.168.2.121`;
+			const inviter = new SIP.Inviter(userAgent, targetURI);
+			inviter.invite().catch(console.error);
+		}
+
+		// DB에서 SIP 계정 목록 가져오기
+		$(document).ready(function () {
+			$.ajax({
+				url: '/sip/list',
+				type: 'GET',
+				success: function (data) {
+					data.forEach(account => {
+						$('#extensionSelect').append(
+							`<option value="${account.extension}">${account.display_name} (${account.extension})</option>`
+						);
+					});
+				},
+				error: function () {
+					alert("내선 목록 불러오기 실패");
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>

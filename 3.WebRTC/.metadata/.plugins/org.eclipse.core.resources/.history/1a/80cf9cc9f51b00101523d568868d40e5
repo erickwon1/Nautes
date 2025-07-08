@@ -1,0 +1,20 @@
+package com.nautestech.www.service;
+
+import org.springframework.stereotype.Service;
+
+import com.nautestech.www.domain.SipAccount;
+import com.nautestech.www.mapper.SipAccountMapper;
+
+@Service
+public class SipAccountService {
+
+	private final SipAccountMapper sipAccountMapper;
+
+	public SipAccountService(SipAccountMapper sipAccountMapper) {
+		this.sipAccountMapper = sipAccountMapper;
+	}
+
+	public SipAccount getAccountByUsername(String username) {
+		return sipAccountMapper.findByUsername(username);
+	}
+}

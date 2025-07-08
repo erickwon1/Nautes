@@ -1,0 +1,22 @@
+// SipAccountController.java
+package com.nautestech.www.controller;
+
+import com.nautestech.www.model.SipAccount;
+import com.nautestech.www.service.SipAccountService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/sip")
+public class SipAccountController {
+
+	@Autowired
+	private SipAccountService sipAccountService;
+
+	@GetMapping("/list")
+	public List<SipAccount> getSipList() {
+		return sipAccountService.getAllAccounts();
+	}
+}

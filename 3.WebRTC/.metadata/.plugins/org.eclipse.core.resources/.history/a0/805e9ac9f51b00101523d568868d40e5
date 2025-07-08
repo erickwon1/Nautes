@@ -1,0 +1,12 @@
+package com.nautestech.www.mapper;
+
+import com.nautestech.www.domain.SipAccount;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+@Mapper
+public interface SipAccountMapper {
+
+	@Select("SELECT username, password, extension FROM sip_accounts WHERE username = #{username}")
+	SipAccount findByUsername(String username);
+}
